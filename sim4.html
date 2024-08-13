@@ -1,0 +1,4951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sims 4</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+        }
+
+        table#history {
+            border-collapse: collapse;
+            border: 1px solid black;
+            max-height: 150px;
+        }
+
+        table thead {
+            border: 1px solid black;
+        }
+        table td {
+            padding: 12px;
+        }
+
+        table tbody tr:nth-child(even), table thead tr {
+            background-color: #DCDCDC;
+        }
+
+        table tbody tr:hover {
+            background-color: #ececec;
+        }
+
+        table tbody tr td:nth-child(2), table tbody tr td:nth-child(4) {
+            text-align: left;
+        }
+
+        table tbody tr td:nth-child(1), table tbody tr td:nth-child(3) , table tbody tr td:nth-child(6) {
+            text-align: right;
+        }
+
+        .side-menu {
+            width: 25%;
+        }
+
+        #selected-traits, #partner-traits {
+            font-size: 0.75em;
+        }
+
+        #selected-traits>div:hover:not(.yellow), #partner-traits>div:hover:not(.yellow) {
+            background-color: #fffadc;
+        }
+
+        #partner-traits {
+            width: 33%;
+        }
+
+        #compatibility-results {
+            width: 50%;
+            text-align: center;
+        }
+
+        main {
+            width: 75%;
+        }
+
+        #result, #random, #selected-traits, #partner-traits, #compatibility {
+            display: flex;
+            flex-flow: row wrap;
+            align-items: flex-start;
+            justify-content: space-evenly;
+            gap: 4px;
+        }
+
+        #result > div, #random > div, #selected-traits > div, #partner-traits > div {
+            /*padding: 4px;*/
+            border: gray 1px solid;
+            cursor: pointer;
+        }
+
+        #result div, #random div, #selected-traits div, #partner-traits div {
+            padding: 2px 8px;
+        }
+
+        .gray {
+            background-color: lightgray;
+        }
+
+        .green {
+            background-color: #8dbf7b;
+        }
+
+        .red {
+            background-color: #dd8585;
+        }
+
+        .close-button:hover {
+            cursor: pointer;
+            color: #dd8585;
+        }
+
+        .yellow {
+            background-color: #ffef96;
+        }
+
+        .tab-header {
+            display: flex;
+            flex-flow: row wrap;
+            align-items: flex-start;
+            justify-content: space-evenly;
+            gap: 4px;
+        }
+
+        .tab-name {
+            background-color: #eaeaea;
+        }
+
+        .tab-name.selected {
+            background-color: #adadad;
+        }
+
+        .tab-body>.tab {
+            display: none;
+        }
+
+        .tab-body>.tab.selected {
+            display: block;
+        }
+
+    </style>
+</head>
+<body>
+<script id="data" type="application/json">
+    {
+        "traits": [
+            "Активный",
+            "Без учения нет умения",
+            "Безумный",
+            "Веган",
+            "Веселый",
+            "Вечное дитя",
+            "Влюбчивый",
+            "Высокие запросы",
+            "Гений",
+            "Гик",
+            "Гурман",
+            "Дитя океана",
+            "Дитя острова",
+            "Добрый",
+            "Достигатор",
+            "Дружелюбный",
+            "Душа компании",
+            "Задира",
+            "Злой",
+            "Инсайдер",
+            "Искусствовед",
+            "Карьерист",
+            "Клептоман",
+            "Книжный червь",
+            "Лежебока",
+            "Любит кошек",
+            "Любит природу",
+            "Любит собак",
+            "Любовь к животным",
+            "Меломан",
+            "Недотрога",
+            "Неловкий в общении",
+            "Непер. лактозы",
+            "Непостоянный",
+            "Неряха",
+            "Неуклюжий",
+            "Обжора",
+            "Одиночка",
+            "Осторож. в любви",
+            "Отважный",
+            "Параноик",
+            "Переработчик",
+            "Перфекционист",
+            "Практичный",
+            "Преданный",
+            "Привереда",
+            "Против детей",
+            "Растяпа",
+            "Ревнивый",
+            "Романтик",
+            "Самоуверенный",
+            "Свой в доску",
+            "Семьянин",
+            "Сноб",
+            "Танцмашина",
+            "Творец",
+            "Уважительный",
+            "Угрюмый",
+            "Умелец",
+            "Фриган",
+            "Холерик",
+            "Чистюля",
+            "Эгоцентричный",
+            "Экоэнтузиаст"
+        ],
+        "categories": [
+            {
+                "name": "Дружба - Характер",
+                "values": [
+                    {
+                        "value": "Домоседы",
+                        "map": [
+                            {
+                                "trait": "Активный",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Книжный червь",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Любит природу",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Неуклюжий",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Одиночка",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Идеалисты",
+                        "map": [
+                            {
+                                "trait": "Гений",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Искусствовед",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Меломан",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Творец",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Идущ. на поводу у эмоц.",
+                        "map": [
+                            {
+                                "trait": "Непостоянный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Ревнивый",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Самоуверенный",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Холерик",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Интеллектуалы",
+                        "map": [
+                            {
+                                "trait": "Гений",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Гик",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Книжный червь",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Растяпа",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Творец",
+                                "weight": -1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Любители питомцев",
+                        "map": [
+                            {
+                                "trait": "Злой",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Любит кошек",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Любит собак",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Любовь к живот.",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Любители спорить",
+                        "map": [
+                            {
+                                "trait": "Добрый",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Задира",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Злой",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Холерик",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Неамбициозные",
+                        "map": [
+                            {
+                                "trait": "Неряха",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Карьерист",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Лежебока",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Одухотворенные",
+                        "map": [
+                            {
+                                "trait": "Веселый",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Дружелюбный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Свой в доску",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Угрюмый",
+                                "weight": -1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Оптимисты",
+                        "map": [
+                            {
+                                "trait": "Веселый",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Добрый",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Угрюмый",
+                                "weight": -1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Пессимисты",
+                        "map": [
+                            {
+                                "trait": "Веселый",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Против детей",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Ревнивый",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Угрюмый",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Преданные семье",
+                        "map": [
+                            {
+                                "trait": "Вечное дитя",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Против детей",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Семьянин",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Проказники",
+                        "map": [
+                            {
+                                "trait": "Клептоман",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Растяпа",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Сноб",
+                                "weight": -1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Трудолюбивые",
+                        "map": [
+                            {
+                                "trait": "Карьерист",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Лежебока",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Неряха",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Перфекционист",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Чистюля",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Ценители природы",
+                        "map": [
+                            {
+                                "trait": "Веган",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Лежебока",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Любит природу",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Ценители романтики",
+                        "map": [
+                            {
+                                "trait": "Непостоянный",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Романтик",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Эгоисты",
+                        "map": [
+                            {
+                                "trait": "Добрый",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Задира",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Практичный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Сноб",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Энергичные",
+                        "map": [
+                            {
+                                "trait": "Активный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Лежебока",
+                                "weight": -1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Юмористы",
+                        "map": [
+                            {
+                                "trait": "Растяпа",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Сноб",
+                                "weight": -1
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Дружба - Темы разговора",
+                "values": [
+                    {
+                        "value": "Глубокие мысли",
+                        "map": [
+                            {
+                                "trait": "Вечное дитя",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Гений",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Лежебока",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Практичный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Растяпа",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Сноб",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Жалобы",
+                        "map": [
+                            {
+                                "trait": "Весёлый",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Угрюмый",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Истории",
+                        "map": [
+                            {
+                                "trait": "Вечное дитя",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Книжный червь",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Неловк. в общ.",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Комплименты",
+                        "map": [
+                            {
+                                "trait": "Добрый",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Дружелюбный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Задира",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Злой",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Неловк. в общ.",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Одиночка",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Параноик",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Самоуверенный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Сноб",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Уважительный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Эгоцентричный",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Любовь",
+                        "map": [
+                            {
+                                "trait": "Влюбчивый",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Добрый",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Дружелюбный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Недотрога",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Романтик",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Нелепое поведение",
+                        "map": [
+                            {
+                                "trait": "Безумный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Вечное дитя",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Неловк. в общ.",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Растяпа",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Самоуверенный",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Сноб",
+                                "weight": -1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Непотребные шутки",
+                        "map": [
+                            {
+                                "trait": "Неловк. в общ.",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Параноик",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Растяпа",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Самоуверенный",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Сноб",
+                                "weight": -1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Обман",
+                        "map": [
+                            {
+                                "trait": "Добрый",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Дружелюбный",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Клептоман",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Параноик",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Растяпа",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Холерик",
+                                "weight": -1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Обсуждение интересов",
+                        "map": [
+                            {
+                                "trait": "Весёлый",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Гений",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Книжный червь",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Практичный",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Обсуждение увлечений",
+                        "map": [
+                            {
+                                "trait": "Весёлый",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Лежебока",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Практичный",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Плохие поступки",
+                        "map": [
+                            {
+                                "trait": "Весёлый",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Вечное дитя",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Добрый",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Дружелюбный",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Задира",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Злой",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Холерик",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Светские беседы",
+                        "map": [
+                            {
+                                "trait": "Вечное дитя",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Неловк. в общ.",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Одиночка",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Растяпа",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Сноб",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Эгоцентричный",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Сплетни",
+                        "map": [
+                            {
+                                "trait": "Неловк. в общ.",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Одиночка",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Параноик",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Практичный",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Угрюмый",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Ссоры",
+                        "map": [
+                            {
+                                "trait": "Весёлый",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Вечное дитя",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Добрый",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Дружелюбный",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Задира",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Злой",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Сноб",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Холерик",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Физическая близость",
+                        "map": [
+                            {
+                                "trait": "Влюбчивый",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Недотрога",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Романтик",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Флирт",
+                        "map": [
+                            {
+                                "trait": "Влюбчивый",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Дружелюбный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Недотрога",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Романтик",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Эгоцентричный",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Шалости",
+                        "map": [
+                            {
+                                "trait": "Вечное дитя",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Одиночка",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Растяпа",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Сноб",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Угрюмый",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Холерик",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Эгоцентричный",
+                                "weight": -1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Шутки",
+                        "map": [
+                            {
+                                "trait": "Весёлый",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Вечное дитя",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Дружелюбный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Неловк. в общ.",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Параноик",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Растяпа",
+                                "weight": 1
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Любовь - Характер",
+                "values": [
+                    {
+                        "value": "Бойкость",
+                        "map": [
+                            {
+                                "trait": "Веселый",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Дружелюбный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Душа компании",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Инсайдер",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Недотрога",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Нелов. В общении",
+                                "weight": -2
+                            },
+                            {
+                                "trait": "Одиночка",
+                                "weight": -2
+                            },
+                            {
+                                "trait": "Параноик",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Романтик",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Самоуверенный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Свой в доску",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Угрюмый",
+                                "weight": -2
+                            },
+                            {
+                                "trait": "Холерик",
+                                "weight": -1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Веселый характер",
+                        "map": [
+                            {
+                                "trait": "Растяпа",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Сноб",
+                                "weight": -1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Домоседство",
+                        "map": [
+                            {
+                                "trait": "Активный",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Гик",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Достигатор",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Дружелюбный",
+                                "weight": -2
+                            },
+                            {
+                                "trait": "Душа компании",
+                                "weight": -2
+                            },
+                            {
+                                "trait": "Инсайдер",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Карьерист",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Книжный червь",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Лежебока",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Нелов. В общении",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Неуклюжий",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Одиночка",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Отважный",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Чистюля",
+                                "weight": -1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Идеализм",
+                        "map": [
+                            {
+                                "trait": "Искусствовед",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Меломан",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Творец",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Интеллектуалы",
+                        "map": [
+                            {
+                                "trait": "Гений",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Гик",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Книжный червь",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Карьерн. Амбиции",
+                        "map": [
+                            {
+                                "trait": "Достигатор",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Карьерист",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Лежебока",
+                                "weight": -2
+                            },
+                            {
+                                "trait": "Фриган",
+                                "weight": -1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Любовь к питомцам",
+                        "map": [
+                            {
+                                "trait": "Любит кошек",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Любит собак",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Любовь к живот.",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Любовь к природе",
+                        "map": [
+                            {
+                                "trait": "Веган",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Дитя океана",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Дитя острова",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Карьерист",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Любит природу",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Переработчик",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Привереда",
+                                "weight": -2
+                            },
+                            {
+                                "trait": "Сноб",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Фриган",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Экоэнтузиаст",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Любовь к спорам",
+                        "map": [
+                            {
+                                "trait": "Веселый",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Вечное дитя",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Добрый",
+                                "weight": -2
+                            },
+                            {
+                                "trait": "Задира",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Злой",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Угрюмый",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Холерик",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Любовь к чистоте",
+                        "map": [
+                            {
+                                "trait": "Лежебока",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Любит природу",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Неряха",
+                                "weight": -2
+                            },
+                            {
+                                "trait": "Обжора",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Привереда",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Фриган",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Чистюля",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Неаккуратность",
+                        "map": [
+                            {
+                                "trait": "Неряха",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Обжора",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Привереда",
+                                "weight": -2
+                            },
+                            {
+                                "trait": "Чистюля",
+                                "weight": -1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Оптимизм",
+                        "map": [
+                            {
+                                "trait": "Веселый",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Добрый",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Задира",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Злой",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Угрюмый",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Холерик",
+                                "weight": -1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Отсутств. Амбиций",
+                        "map": [
+                            {
+                                "trait": "Активный",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Достигатор",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Карьерист",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Лежебока",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Неряха",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Отважный",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Привереда",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Чистюля",
+                                "weight": -2
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Пессимизм",
+                        "map": [
+                            {
+                                "trait": "Веселый",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Вечное дитя",
+                                "weight": -2
+                            },
+                            {
+                                "trait": "Добрый",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Дружелюбный",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Душа компании",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Злой",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Недотрога",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Непостоянный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Параноик",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Преданный",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Против детей",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Ревнивый",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Романтик",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Семьянин",
+                                "weight": -2
+                            },
+                            {
+                                "trait": "Угрюмый",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Холерик",
+                                "weight": -1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Подв. Влиян. Эмоц.",
+                        "map": [
+                            {
+                                "trait": "Безумный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Веселый",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Дружелюбный",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Непостоянный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Параноик",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Преданный",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Семьянин",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Угрюмый",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Холерик",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Семейн. Ценности",
+                        "map": [
+                            {
+                                "trait": "Вечное дитя",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Злой",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Непостоянный",
+                                "weight": -2
+                            },
+                            {
+                                "trait": "Преданный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Против детей",
+                                "weight": -2
+                            },
+                            {
+                                "trait": "Семьянин",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Сноб",
+                                "weight": -1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Трудолюбие",
+                        "map": [
+                            {
+                                "trait": "Достигатор",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Карьерист",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Лежебока",
+                                "weight": -3
+                            },
+                            {
+                                "trait": "Неряха",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Перфекционист",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Фриган",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Чистюля",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Эгоизм",
+                        "map": [
+                            {
+                                "trait": "Вечное дитя",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Высокие запросы",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Практичный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Растяпа",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Сноб",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Фриган",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Эгоцентричный",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Энергичность",
+                        "map": [
+                            {
+                                "trait": "Активный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Лежебока",
+                                "weight": -2
+                            },
+                            {
+                                "trait": "Отважный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Танцмашина",
+                                "weight": 1
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Любовь - Навыки",
+                "values": [
+                    {
+                        "value": "Бедность",
+                        "map": [
+                            {
+                                "trait": "Достигатор",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Карьерист",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Практичный",
+                                "weight": -1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Богатство",
+                        "map": [
+                            {
+                                "trait": "Достигатор",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Карьерист",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Практичный",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "В отношениях",
+                        "map": [
+                            {
+                                "trait": "Непостоянный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Параноик",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Преданный",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Семьянин",
+                                "weight": -1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Выступления на сцене",
+                        "map": [
+                            {
+                                "trait": "Меломан",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Танцмашина",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Творец",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Здоровье и спорт",
+                        "map": [
+                            {
+                                "trait": "Активный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Высокие запросы",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Лежебока",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Отважный",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Инженерное дело",
+                        "map": [
+                            {
+                                "trait": "Умелец",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Фриган",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Карьерные достиж.",
+                        "map": [
+                            {
+                                "trait": "Гений",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Достигатор",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Карьерист",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Лежебока",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Практичный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Фриган",
+                                "weight": -1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Кулинария",
+                        "map": [
+                            {
+                                "trait": "Гурман",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Обжора",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Привереда",
+                                "weight": -1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Лень",
+                        "map": [
+                            {
+                                "trait": "Активный",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Высокие запросы",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Гений",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Достигатор",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Карьерист",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Лежебока",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Отважный",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Практичный",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Умелец",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Чистюля",
+                                "weight": -1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Межлич. общение",
+                        "map": [
+                            {
+                                "trait": "Веселый",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Дружелюбный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Инсайдер",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Неловк. в общ.",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Одиночка",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Параноик",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Угрюмый",
+                                "weight": -1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Мультимед. И тех.",
+                        "map": [
+                            {
+                                "trait": "Вечное дитя",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Гик",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Наука",
+                        "map": [
+                            {
+                                "trait": "Гений",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Приготов. Напитков",
+                        "map": [
+                            {
+                                "trait": "Гурман",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Обжора",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Природа",
+                        "map": [
+                            {
+                                "trait": "Веган",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Любит природу",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Привереда",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Чистюля",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Экоэнтузиаст",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Развитые навыки",
+                        "map": [
+                            {
+                                "trait": "Гений",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Достигатор",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Карьерист",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Лежебока",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Практичный",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Творчество и рукодел.",
+                        "map": [
+                            {
+                                "trait": "Искусствовед",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Творец",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Фриланс",
+                        "map": [
+                            {
+                                "trait": "Достигатор",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Карьерист",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Лежебока",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Практичный",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Фриган",
+                                "weight": 1
+                            }
+                        ]
+                    },
+                    {
+                        "value": "Чувство юмора",
+                        "map": [
+                            {
+                                "trait": "Веселый",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Вечное дитя",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Дружелюбный",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Инсайдер",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Неловк. в общ.",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Одиночка",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Параноик",
+                                "weight": -1
+                            },
+                            {
+                                "trait": "Растяпа",
+                                "weight": 1
+                            },
+                            {
+                                "trait": "Угрюмый",
+                                "weight": -1
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "compatibility": [
+            {
+                "value": "Активный",
+                "map": [
+                    {
+                        "trait": "Активный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Отважный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Танцмашина",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Гик",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Книжный червь",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Лежебока",
+                        "weight": -2
+                    },
+                    {
+                        "trait": "Неловкий в общении",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Неряха",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Неуклюжий",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Одиночка",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Безумный",
+                "map": [
+                    {
+                        "trait": "Безумный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Непостоянный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Параноик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Холерик",
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "value": "Веган",
+                "map": [
+                    {
+                        "trait": "Любит природу",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Веган",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Дитя океана",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Дитя острова",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Фриган",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Экоэнтузиаст",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Переработчик",
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "value": "Веселый",
+                "map": [
+                    {
+                        "trait": "Веселый",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Добрый",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Дружелюбный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Душа компании",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Инсайдер",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Карьерист",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Романтик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Самоуверенный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Свой в доску",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Задира",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Злой",
+                        "weight": -2
+                    },
+                    {
+                        "trait": "Недотрога",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Непостоянный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Параноик",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Против детей",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Ревнивый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Угрюмый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Холерик",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Вечное дитя",
+                "map": [
+                    {
+                        "trait": "Вечное дитя",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Преданность",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Семьянин",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Высокие запросы",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Задира",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Злой",
+                        "weight": -2
+                    },
+                    {
+                        "trait": "Недотрога",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Непостоянный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Параноик",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Практичный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Против детей",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Ревнивый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Сноб",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Угрюмый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Холерик",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Эгоцентричный",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Высокие запросы",
+                "map": [
+                    {
+                        "trait": "Высокие запросы",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Практичный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Сноб",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Эгоцентричный",
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "value": "Гений",
+                "map": [
+                    {
+                        "trait": "Гений",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Гик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Книжный червь",
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "value": "Гик",
+                "map": [
+                    {
+                        "trait": "Гений",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Гик",
+                        "weight": 2
+                    },
+                    {
+                        "trait": "Книжный червь",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Лежебока",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Неловкий в общении",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Неуклюжий",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Одиночка",
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "value": "Дитя океана",
+                "map": [
+                    {
+                        "trait": "Любит природу",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Веган",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Дитя океана",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Дитя острова",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Фриган",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Экоэнтузиаст",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Переработчик",
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "value": "Дитя острова",
+                "map": [
+                    {
+                        "trait": "Любит природу",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Веган",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Дитя океана",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Дитя острова",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Фриган",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Экоэнтузиаст",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Переработчик",
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "value": "Добрый",
+                "map": [
+                    {
+                        "trait": "Веселый",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Добрый",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Кариерист",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Задира",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Злой",
+                        "weight": -2
+                    },
+                    {
+                        "trait": "Недотрога",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Непостоянный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Параноик",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Против детей",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Ревнивый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Угрюмый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Холерик",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Достигатор",
+                "map": [
+                    {
+                        "trait": "Достигатор",
+                        "weight": 2
+                    },
+                    {
+                        "trait": "Карьерист",
+                        "weight": 2
+                    },
+                    {
+                        "trait": "Перфекционист",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Чистюля",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Гик",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Книжный червь",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Лежебока",
+                        "weight": -2
+                    },
+                    {
+                        "trait": "Неловкий в общении",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Неряха",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Неуклюжий",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Одиночка",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Дружелюбный",
+                "map": [
+                    {
+                        "trait": "Веселый",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Дружелюбный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Душа компании",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Инсайдер",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Романтик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Самоуверенный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Свой в доску",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Безумный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Гик",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Злой",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Книжный червь",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Лежебока",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Недотрога",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Неловкий в общении",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Непостоянный",
+                        "weight": -2
+                    },
+                    {
+                        "trait": "Неуклюжий",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Одиночка",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Параноик",
+                        "weight": -2
+                    },
+                    {
+                        "trait": "Против детей",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Ревнивый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Угрюмый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Холерик",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Душа компании",
+                "map": [
+                    {
+                        "trait": "Веселый",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Дружелюбный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Душа компании",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Инсайдер",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Романтик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Самоуверенный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Свой в доску",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Гик",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Злой",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Книжный червь",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Лежебока",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Недотрога",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Неловкий в общении",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Непостоянный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Неуклюжий",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Одиночка",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Параноик",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Против детей",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Ревнивый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Угрюмый",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Задира",
+                "map": [
+                    {
+                        "trait": "Задира",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Злой",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Холерик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Веселый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Добрый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Кариерист",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Злой",
+                "map": [
+                    {
+                        "trait": "Задира",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Злой",
+                        "weight": 2
+                    },
+                    {
+                        "trait": "Недотрога",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Непостоянный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Параноик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Против детей",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Ревнивый",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Угрюмый",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Холерик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Веселый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Вечное дитя",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Добрый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Кариерист",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Преданность",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Семьянин",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Инсайдер",
+                "map": [
+                    {
+                        "trait": "Веселый",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Дружелюбный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Душа компании",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Инсайдер",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Романтик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Самоуверенный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Свой в доску",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Гик",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Книжный червь",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Лежебока",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Неловкий в общении",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Неуклюжий",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Одиночка",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Искусствовед",
+                "map": [
+                    {
+                        "trait": "Искусствовед",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Меломан",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Творец",
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "value": "Карьерист",
+                "map": [
+                    {
+                        "trait": "Достигатор",
+                        "weight": 2
+                    },
+                    {
+                        "trait": "Карьерист",
+                        "weight": 2
+                    },
+                    {
+                        "trait": "Перфекционист",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Чистюля",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Веган",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Гик",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Дитя океана",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Дитя острова",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Книжный червь",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Лежебока",
+                        "weight": -2
+                    },
+                    {
+                        "trait": "Любит природу",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Неловкий в общении",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Неряха",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Неуклюжий",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Одиночка",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Переработчик",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Фриган",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Экоэнтузиаст",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Книжный червь",
+                "map": [
+                    {
+                        "trait": "Гений",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Гик",
+                        "weight": 2
+                    },
+                    {
+                        "trait": "Книжный червь",
+                        "weight": 2
+                    },
+                    {
+                        "trait": "Лежебока",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Неловкий в общении",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Неуклюжий",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Одиночка",
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "value": "Лежебока",
+                "map": [
+                    {
+                        "trait": "Гик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Книжный червь",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Лежебока",
+                        "weight": 2
+                    },
+                    {
+                        "trait": "Неловкий в общении",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Неряха",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Неуклюжий",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Одиночка",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Активный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Достигатор",
+                        "weight": -2
+                    },
+                    {
+                        "trait": "Карьерист",
+                        "weight": -2
+                    },
+                    {
+                        "trait": "Отважный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Перфекционист",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Привереда",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Танцмашина",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Чистюля",
+                        "weight": -2
+                    }
+                ]
+            },
+            {
+                "value": "Любит кошек",
+                "map": [
+                    {
+                        "trait": "Любит кошек",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Любит собак",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Любовь к животным",
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "value": "Любит природу",
+                "map": [
+                    {
+                        "trait": "Любит природу",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Веган",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Дитя океана",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Дитя острова",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Фриган",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Экоэнтузиаст",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Переработчик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Привереда",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Чистюля",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Любит собак",
+                "map": [
+                    {
+                        "trait": "Любит кошек",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Любит собак",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Любовь к животным",
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "value": "Любовь к животным",
+                "map": [
+                    {
+                        "trait": "Любит кошек",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Любит собак",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Любовь к животным",
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "value": "Меломан",
+                "map": [
+                    {
+                        "trait": "Искусствовед",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Меломан",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Творец",
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "value": "Недотрога",
+                "map": [
+                    {
+                        "trait": "Злой",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Недотрога",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Непостоянный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Параноик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Против детей",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Ревнивый",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Угрюмый",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Веселый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Дружелюбный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Душа компании",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Инсайдер",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Романтик",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Самоуверенный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Свой в доску",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Неловкий в общении",
+                "map": [
+                    {
+                        "trait": "Гик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Книжный червь",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Лежебока",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Неловкий в общении",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Неуклюжий",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Одиночка",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Веселый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Дружелюбный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Душа компании",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Инсайдер",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Романтик",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Самоуверенный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Свой в доску",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Непостоянный",
+                "map": [
+                    {
+                        "trait": "Безумный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Злой",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Недотрога",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Непостоянный",
+                        "weight": 2
+                    },
+                    {
+                        "trait": "Параноик",
+                        "weight": 2
+                    },
+                    {
+                        "trait": "Против детей",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Ревнивый",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Угрюмый",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Холерик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Вечное дитя",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Преданность",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Семьянин",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Неряха",
+                "map": [
+                    {
+                        "trait": "Лежебока",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Неряха",
+                        "weight": 2
+                    },
+                    {
+                        "trait": "Обжора",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Достигатор",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Карьерист",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Перфекционист",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Привереда",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Чистюля",
+                        "weight": -2
+                    }
+                ]
+            },
+            {
+                "value": "Неуклюжий",
+                "map": [
+                    {
+                        "trait": "Гик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Книжный червь",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Лежебока",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Неловкий в общении",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Неуклюжий",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Одиночка",
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "value": "Обжора",
+                "map": [
+                    {
+                        "trait": "Неряха",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Обжора",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Привереда",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Чистюля",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Одиночка",
+                "map": [
+                    {
+                        "trait": "Гик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Книжный червь",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Лежебока",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Неловкий в общении",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Неуклюжий",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Одиночка",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Веселый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Дружелюбный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Душа компании",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Инсайдер",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Романтик",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Самоуверенный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Свой в доску",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Отважный",
+                "map": [
+                    {
+                        "trait": "Активный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Отважный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Танцмашина",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Гик",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Книжный червь",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Лежебока",
+                        "weight": -2
+                    },
+                    {
+                        "trait": "Неловкий в общении",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Неряха",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Неуклюжий",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Одиночка",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Параноик",
+                "map": [
+                    {
+                        "trait": "Безумный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Злой",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Недотрога",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Непостоянный",
+                        "weight": 2
+                    },
+                    {
+                        "trait": "Параноик",
+                        "weight": 2
+                    },
+                    {
+                        "trait": "Против детей",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Ревнивый",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Угрюмый",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Холерик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Веселый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Дружелюбный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Душа компании",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Инсайдер",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Романтик",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Самоуверенный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Свой в доску",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Переработчик",
+                "map": [
+                    {
+                        "trait": "Веган",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Дитя океана",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Дитя острова",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Любит природу",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Переработчик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Фриган",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Экоэнтузиаст",
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "value": "Перфекционист",
+                "map": [
+                    {
+                        "trait": "Достигатор",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Карьерист",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Перфекционист",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Чистюля",
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "value": "Практичный",
+                "map": [
+                    {
+                        "trait": "Высокие запросы",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Практичный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Сноб",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Эгоцентричный",
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "value": "Преданный",
+                "map": [
+                    {
+                        "trait": "Вечное дитя",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Преданность",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Семьянин",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Безумный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Злой",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Недотрога",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Непостоянный",
+                        "weight": -2
+                    },
+                    {
+                        "trait": "Параноик",
+                        "weight": -2
+                    },
+                    {
+                        "trait": "Против детей",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Ревнивый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Угрюмый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Холерик",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Привереда",
+                "map": [
+                    {
+                        "trait": "Привереда",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Чистюля",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Веган",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Дитя океана",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Дитя острова",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Лежебока",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Любит природу",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Неряха",
+                        "weight": -2
+                    },
+                    {
+                        "trait": "Обжора",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Переработчик",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Фриган",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Экоэнтузиаст",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Против детей",
+                "map": [
+                    {
+                        "trait": "Злой",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Недотрога",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Непостоянный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Параноик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Против детей",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Ревнивый",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Угрюмый",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Вечное дитя",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Преданность",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Семьянин",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Растяпа",
+                "map": [
+                    {
+                        "trait": "Растяпа",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Высокие запросы",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Практичный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Сноб",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Эгоцентричный",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Ревнивый",
+                "map": [
+                    {
+                        "trait": "Злой",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Недотрога",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Непостоянный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Параноик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Против детей",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Ревнивый",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Угрюмый",
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "value": "Романтик",
+                "map": [
+                    {
+                        "trait": "Веселый",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Дружелюбный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Душа компании",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Инсайдер",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Романтик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Самоуверенный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Свой в доску",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Злой",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Недотрога",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Непостоянный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Параноик",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Против детей",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Ревнивый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Угрюмый",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Самоуверенный",
+                "map": [
+                    {
+                        "trait": "Веселый",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Дружелюбный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Душа компании",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Инсайдер",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Романтик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Самоуверенный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Свой в доску",
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "value": "Свой в доску",
+                "map": [
+                    {
+                        "trait": "Веселый",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Дружелюбный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Душа компании",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Инсайдер",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Романтик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Самоуверенный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Свой в доску",
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "value": "Семьянин",
+                "map": [
+                    {
+                        "trait": "Вечное дитя",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Преданность",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Семьянин",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Безумный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Злой",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Недотрога",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Непостоянный",
+                        "weight": -2
+                    },
+                    {
+                        "trait": "Параноик",
+                        "weight": -2
+                    },
+                    {
+                        "trait": "Против детей",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Ревнивый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Угрюмый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Холерик",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Сноб",
+                "map": [
+                    {
+                        "trait": "Высокие запросы",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Практичный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Сноб",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Эгоцентричный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Растяпа",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Веган",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Вечное дитя",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Дитя океана",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Дитя острова",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Любит природу",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Переработчик",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Преданность",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Семьянин",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Фриган",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Экоэнтузиаст",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Танцмашина",
+                "map": [
+                    {
+                        "trait": "Активный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Отважный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Танцмашина",
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "value": "Творец",
+                "map": [
+                    {
+                        "trait": "Искусствовед",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Меломан",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Творец",
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "value": "Угрюмый",
+                "map": [
+                    {
+                        "trait": "Недотрога",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Против детей",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Ревнивый",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Угрюмый",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Безумный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Веселый",
+                        "weight": -2
+                    },
+                    {
+                        "trait": "Добрый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Дружелюбный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Душа компании",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Задира",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Инсайдер",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Кариерист",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Романтик",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Самоуверенный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Свой в доску",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Холерик",
+                        "weight": -2
+                    }
+                ]
+            },
+            {
+                "value": "Фриган",
+                "map": [
+                    {
+                        "trait": "Веган",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Дитя океана",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Дитя острова",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Любит природу",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Переработчик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Фриган",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Экоэнтузиаст",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Высокие запросы",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Достигатор",
+                        "weight": -2
+                    },
+                    {
+                        "trait": "Карьерист",
+                        "weight": -2
+                    },
+                    {
+                        "trait": "Перфекционист",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Практичный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Привереда",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Сноб",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Чистюля",
+                        "weight": -2
+                    },
+                    {
+                        "trait": "Эгоцентричный",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Холерик",
+                "map": [
+                    {
+                        "trait": "Безумный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Задира",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Злой",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Холерик",
+                        "weight": 2
+                    },
+                    {
+                        "trait": "Веселый",
+                        "weight": -2
+                    },
+                    {
+                        "trait": "Добрый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Дружелюбный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Душа компании",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Злой",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Инсайдер",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Кариерист",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Недотрога",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Против детей",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Ревнивый",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Романтик",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Самоуверенный",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Свой в доску",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Угрюмый",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Чистюля",
+                "map": [
+                    {
+                        "trait": "Достигатор",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Карьерист",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Перфекционист",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Привереда",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Чистюля",
+                        "weight": 2
+                    },
+                    {
+                        "trait": "Гик",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Книжный червь",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Лежебока",
+                        "weight": -2
+                    },
+                    {
+                        "trait": "Неловкий в общении",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Неряха",
+                        "weight": -2
+                    },
+                    {
+                        "trait": "Неуклюжий",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Обжора",
+                        "weight": -1
+                    },
+                    {
+                        "trait": "Одиночка",
+                        "weight": -1
+                    }
+                ]
+            },
+            {
+                "value": "Эгоцентричный",
+                "map": [
+                    {
+                        "trait": "Высокие запросы",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Практичный",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Сноб",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Эгоцентричный",
+                        "weight": 1
+                    }
+                ]
+            },
+            {
+                "value": "Экоэнтузиаст",
+                "map": [
+                    {
+                        "trait": "Веган",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Дитя океана",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Дитя острова",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Любит природу",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Переработчик",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Фриган",
+                        "weight": 1
+                    },
+                    {
+                        "trait": "Экоэнтузиаст",
+                        "weight": 1
+                    }
+                ]
+            }
+        ],
+        "randoms": [
+            {
+                "category": "Цвета",
+                "values": [
+                    "Белый",
+                    "Жёлтый",
+                    "Зелёный",
+                    "Коричневый",
+                    "Красный",
+                    "Оранжевый",
+                    "Розовый",
+                    "Серый",
+                    "Синий",
+                    "Фиолетовый",
+                    "Чёрный"
+                ]
+            },
+            {
+                "category": "Музыка",
+                "values": [
+                    "Авторская песня",
+                    "Альтернативная музыка",
+                    "Американа",
+                    "Блюз",
+                    "Дворовая музыка",
+                    "Джаз",
+                    "Жуткая музыка",
+                    "Карнавальная музыка",
+                    "Классическая музыка",
+                    "Колыбельные",
+                    "Латино",
+                    "Латиноамериканская поп-музыка",
+                    "Лёгкая музыка",
+                    "Летняя музыка",
+                    "МУЗЫКА В ЖАНРЕ МЕТАЛЛ",
+                    "Музыка в жанре ар-н-би",
+                    "Музыка в жанре нью-эйдж",
+                    "Музыка в жанре ретро",
+                    "Музыка в жанре соул",
+                    "Музыка в стиле сельской эстетики",
+                    "Музыка для детей",
+                    "Музыка для концентрации внимания",
+                    "Музыка из будки ди-джея",
+                    "Музыка мира",
+                    "Музыка с острова",
+                    "Музыка эпохи барокко",
+                    "Поп-музыка",
+                    "Поп-музыка для детей",
+                    "Рождественская музыка",
+                    "Романтическая музыка",
+                    "С-поп",
+                    "Странные мелодии",
+                    "Хип-хоп",
+                    "Электронная музыка",
+                    "Японская народная музыка"
+                ]
+            },
+            {
+                "category": "Отношения",
+                "values": [
+                    "Вуху",
+                    "Дарение подарков",
+                    "Любовь",
+                    "Физическая близость",
+                    "Флирт"
+                ]
+            }
+        ]
+    }
+</script>
+<script>
+    class Info {
+        constructor() {
+            this.person = 'Персонаж'
+            this.partner = 'Партнер'
+            this.personScore = 0
+            this.partnerScore = 0
+            this.compatibilityScore = 0
+            this.personTraits = new Set()
+            this.partnerTraits = new Set()
+        }
+        static fromJSON(json) {
+            let info = new Info()
+            info.person = json['person']
+            info.partner = json['partner']
+            info.personScore = json['personScore']
+            info.partnerScore = json['partnerScore']
+            info.compatibilityScore = json['compatibilityScore']
+            info.personTraits = new Set(json['personTraits'])
+            info.partnerTraits = new Set(json['partnerTraits'])
+            return info
+        }
+        toJSON() {
+            return {
+                'person': this.person,
+                'partner': this.partner,
+                'personScore': this.personScore,
+                'partnerScore': this.partnerScore,
+                'compatibilityScore': this.compatibilityScore,
+                'personTraits': Array.from(this.personTraits),
+                'partnerTraits': Array.from(this.partnerTraits),
+            }
+        }
+    }
+
+    let DATA = {}
+    let INFO = new Info()
+    let HISTORY = []
+    const loadData = () => {
+        return JSON.parse(document.querySelector('#data').textContent)
+    }
+
+    const change = () => {
+        drawCategories(calcCategories())
+        drawRandoms(calcRandoms())
+        changePartner()
+    }
+
+    const drawTraits = () => {
+        const baseDiv = document.querySelector('div#selected-traits')
+        for (const trait of DATA.traits) {
+            let catDiv = document.createElement('div')
+            catDiv.addEventListener('click', toggleTrait)
+            catDiv.setAttribute('data-trait', trait)
+            catDiv.innerHTML = `<span>${trait}</span>`
+            baseDiv.appendChild(catDiv)
+        }
+    }
+
+    const drawPartnerTraits = () => {
+        const baseDiv = document.querySelector('div#partner-traits')
+        for (const trait of DATA.traits) {
+            let catDiv = document.createElement('div')
+            catDiv.addEventListener('click', togglePartnerTrait)
+            catDiv.setAttribute('data-trait', trait)
+            catDiv.innerHTML = `<span>${trait}</span>`
+            baseDiv.appendChild(catDiv)
+        }
+    }
+
+    function toggleTrait() {
+        _toggleTrait(this, INFO.personTraits)
+        change()
+    }
+
+    function togglePartnerTrait() {
+        _toggleTrait(this, INFO.partnerTraits)
+        changePartner()
+    }
+
+    const _toggleTrait = (obj, set) => {
+        const trait = obj.getAttribute('data-trait')
+        if (set.has(trait)) {
+            set.delete(trait)
+            obj.classList.remove('yellow')
+        } else {
+            set.add(trait)
+            obj.classList.add('yellow')
+        }
+    }
+
+    const changePartner = () => {
+        let [person2partnerScore, partner2personScore, compatibilityScore] = calcScores()
+        drawScores(person2partnerScore, partner2personScore, compatibilityScore)
+    }
+
+    const calcScores = () => {
+        let person2partnerScore = 0
+        let partner2personScore = 0
+        for (let compatibility of DATA.compatibility) {
+            if (INFO.personTraits.has(compatibility.value)) {
+                person2partnerScore += compatibility.map.map(v => INFO.partnerTraits.has(v.trait) ? v.weight : 0).reduce((a, b) => a + b, 0)
+            }
+            if (INFO.partnerTraits.has(compatibility.value)) {
+                partner2personScore += compatibility.map.map(v => INFO.personTraits.has(v.trait) ? v.weight : 0).reduce((a, b) => a + b, 0)
+            }
+        }
+        let compatibilityScore = calcCompatibilityScore(person2partnerScore, partner2personScore)
+        INFO.personScore = person2partnerScore
+        INFO.partnerScore = partner2personScore
+        INFO.compatibilityScore = compatibilityScore
+        return [person2partnerScore, partner2personScore, compatibilityScore]
+    }
+
+    const calcCompatibilityScore = (person2partnerScore, partner2personScore) => {
+        let avg = (person2partnerScore + partner2personScore) / 2
+        let D = Math.abs(person2partnerScore - partner2personScore)
+        let top = 10
+        let baseScore = (avg - D * 0.32) * 100 / top
+        let person2partnerPenalty = Math.min(Math.sign(person2partnerScore), 0) * top
+        let partner2personPenalty = Math.min(Math.sign(partner2personScore), 0) * top
+        return Math.round(baseScore + partner2personPenalty + person2partnerPenalty) / 10
+    }
+
+    const drawScores = (person2partnerScore, partner2personScore, compatibilityScore) => {
+        const root = document.querySelector('#compatibility-results')
+        root.querySelector('.personScore').textContent = person2partnerScore
+        root.querySelector('.partnerScore').textContent = partner2personScore
+        root.querySelector('.compatibilityScore').textContent = compatibilityScore
+    }
+
+    const setNames = () => {
+        for (let k of ['person', 'partner']) {
+            document.querySelectorAll(`#compatibility-results .${k}`).forEach(v => {
+                v.textContent = INFO[k]
+            })
+        }
+    }
+
+    function changeName(e) {
+        let tp = this.classList[0]
+        INFO[tp] = this.textContent
+        document.querySelectorAll(`#compatibility-results .${tp}`).forEach(v => {
+            if (v.textContent !== INFO[tp]) v.textContent = INFO[tp]
+        })
+    }
+
+    const calcRandoms = () => {
+        return DATA.randoms.map((v) => calcRandom(v))
+    }
+
+    const calcRandom = (category) => {
+        let i = Math.floor(Math.random() * category.values.length)
+        return {
+            category: category.category,
+            value: category.values[i],
+            weight: Math.floor(Math.random() * 2) * 2 - 1
+        }
+    }
+
+    const drawCategories = (drawData) => {
+        const baseDiv = document.querySelector('div#result')
+        baseDiv.innerHTML = ''
+        for (const category of drawData) {
+            let catDiv = document.createElement('div')
+            catDiv.innerHTML = `<p><b>${category.category}</b></p>`
+            for (const value of category.values) {
+                catDiv.innerHTML += `<div class="${getClass(value.sum)}"><span>${value.value}</span></div>`
+            }
+            baseDiv.appendChild(catDiv)
+        }
+    }
+
+    const drawRandoms = (randomData) => {
+        const baseDiv = document.querySelector('div#random')
+        baseDiv.innerHTML = ''
+        for (const category of randomData) {
+            let catDiv = document.createElement('div')
+            catDiv.innerHTML = `<p>${category.category}:</p>`
+            catDiv.innerHTML += `<div class="${getClass(category.weight)}">${category.value}</div>`
+            baseDiv.appendChild(catDiv)
+        }
+    }
+
+    const getClass = (num) => {
+        if (num > 0) return 'green'
+        if (num < 0) return 'red'
+        return 'gray'
+    }
+
+    const calcCategories = () => {
+        return DATA.categories.map((v) => calcCategory(v))
+    }
+
+    const calcCategory = (category) => {
+        return {
+            category: category.name,
+            values: category.values.map((v) => calcCategoryValue(v))
+        }
+    }
+
+    const calcCategoryValue = (categoryValue) => {
+        const sum = categoryValue['map'].reduce((p, c) => {
+            if (INFO.personTraits.has(c.trait)) {
+                p += c.weight
+            }
+            return p
+        }, 0)
+        return {
+            value: categoryValue.value,
+            sum: sum,
+        }
+    }
+
+    const clearHistory = () => {
+        HISTORY.splice(0, HISTORY.length)
+        localStorage.setItem('HISTORY', JSON.stringify(HISTORY))
+        document.querySelector('#history tbody').innerHTML = ''
+    }
+
+    const addToHistory = () => {
+        HISTORY.push(Info.fromJSON(JSON.parse(JSON.stringify(INFO.toJSON()))))
+        addHistory(INFO)
+        localStorage.setItem('HISTORY', JSON.stringify(HISTORY))
+    }
+
+    function removeRow(e) {
+        let tr = this.closest('tr')
+        let idx = Array.from(document.querySelector('#history tbody').children).indexOf(tr)
+        tr.remove()
+        HISTORY.splice(idx, 1)
+        localStorage.setItem('HISTORY', JSON.stringify(HISTORY.map(v=>v.toJSON())))
+    }
+
+    function setInfoFromHistory(e) {
+        let idx = Array.from(document.querySelector('#history tbody').children).indexOf(this)
+        INFO = Info.fromJSON(HISTORY[idx].toJSON())
+        change()
+        for (p of ['person', 'partner']) {
+            document.querySelectorAll(`.${p}`).forEach(v=> {
+                v.textContent = INFO[p]
+            })
+        }
+        setTraits()
+    }
+
+    const setTraits = () => {
+        document.querySelectorAll('#selected-traits>div, #partner-traits>div').forEach(v => {
+            v.classList.remove('yellow')
+        })
+        Array.from(INFO.personTraits).forEach(v => {
+            document.querySelector(`#selected-traits>div[data-trait="${v}"]`).classList.add('yellow')
+        })
+        Array.from(INFO.partnerTraits).forEach(v => {
+            document.querySelector(`#partner-traits>div[data-trait="${v}"]`).classList.add('yellow')
+        })
+    }
+
+    const clearTraits = () => {
+        INFO.personTraits.clear()
+        INFO.partnerTraits.clear()
+        setTraits()
+        change()
+    }
+
+    const addHistory = (info) => {
+        const tr = document.createElement('tr')
+        for (let data of [
+            info.person,
+            info.personScore,
+            info.partner,
+            info.partnerScore,
+            info.compatibilityScore
+        ]) {
+            let td = document.createElement('td')
+            td.textContent = formatInfo(data)
+            tr.appendChild(td)
+        }
+        let td = document.createElement('td')
+        let span = document.createElement('span')
+        span.classList.add('close-button')
+        span.innerHTML = '&#10799;'
+        span.addEventListener('click', removeRow)
+        td.appendChild(span)
+        tr.appendChild(td)
+        tr.addEventListener('dblclick', setInfoFromHistory)
+        document.querySelector('#history tbody').appendChild(tr)
+    }
+
+    const formatInfo = (data) => {
+        if (data instanceof Set) {
+            return Array.from(data).join(', ')
+        }
+        return data
+    }
+
+    function switchTab(e) {
+        if (!e.target.classList.contains('tab-name'))
+            return
+        if (e.target.classList.contains('selected'))
+            return
+        this.querySelector('.tab-name.selected').classList.remove('selected')
+        e.target.classList.add('selected')
+        let idx = Array.from(this.children).indexOf(e.target)
+        this.parentNode.querySelector('.tab-body>.tab.selected').classList.remove('selected')
+        this.parentNode.querySelectorAll('.tab-body>.tab')[idx].classList.add('selected')
+    }
+
+    const init = () => {
+        document.querySelector('.tab-header').addEventListener('click', switchTab)
+        document.querySelectorAll('.person, .partner').forEach(v=> v.addEventListener('input', changeName))
+        DATA = loadData()
+        drawTraits()
+        drawPartnerTraits()
+        change()
+        setNames()
+        HISTORY = JSON.parse(localStorage.getItem('HISTORY') || '[]').map(v => Info.fromJSON(v))
+        HISTORY.forEach(v => addHistory(v))
+    }
+
+    document.addEventListener('DOMContentLoaded', init)
+</script>
+<div class="side-menu">
+    <h2>Черты характера <button onclick="clearTraits()">Очистить все</button></h2>
+    <div id="selected-traits"></div>
+</div>
+<main>
+    <div class="tab-container">
+        <div class="tab-header">
+            <h2 class="tab-name selected">Категории и предпочтения</h2>
+            <h2 class="tab-name">Совместимость</h2>
+        </div>
+        <div class="tab-body">
+            <div class="tab selected">
+                <div id="result"></div>
+                <div id="random"></div>
+            </div>
+            <div class="tab">
+                <div id="compatibility">
+                    <div id="compatibility-results">
+                        <p><span class="person" contenteditable></span> &#8594; <span class="personScore">0</span> &#8594; <span
+                                class="partner" contenteditable></span></p>
+                        <p><span class="person" contenteditable></span> &#8592; <span class="partnerScore">0</span> &#8592; <span
+                                class="partner" contenteditable></span></p>
+                        <p>Совместимость: <span class="compatibilityScore">0</span></p>
+                        <button onclick="addToHistory()">Сохранить</button> <button onclick="clearHistory()">Очистить таблицу</button><br>
+                        <br>
+                        <table id="history" style="width: 100%">
+                            <thead>
+                            <tr>
+                                <td colspan="2">Персонаж</td>
+                                <td colspan="2">Партнер</td>
+                                <td rowspan="2" colspan="2" style="width: 10%">Совместимость</td>
+                            </tr>
+                            <tr>
+                                <td>Имя</td>
+                                <td>Баллы</td>
+                                <td>Имя</td>
+                                <td>Баллы</td>
+                            </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="partner-traits"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>
