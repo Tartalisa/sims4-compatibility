@@ -4842,6 +4842,12 @@
         change()
     }
 
+    const clearPartnerTraits = () => {
+        INFO.partnerTraits.clear()
+        setTraits()
+        changePartner()
+    }
+
     const addHistory = (info) => {
         const tr = document.createElement('tr')
         for (let data of [
@@ -4907,7 +4913,7 @@
     <div class="tab-container">
         <div class="tab-header">
             <h2 class="tab-name selected">Категории и предпочтения</h2>
-            <h2 class="tab-name">Совместимость</h2>
+            <h2 class="tab-name">Совместимость <button onclick="clearPartnerTraits()">Очистить ЧХ</button></h2>
         </div>
         <div class="tab-body">
             <div class="tab selected">
