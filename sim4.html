@@ -131,6 +131,7 @@
     </style>
 </head>
 <body>
+<script src="mkreator.js"></script>
 <script id="data" type="application/json">
     {
         "traits": [
@@ -4620,93 +4621,41 @@
         return JSON.parse(document.querySelector('#data').textContent)
     }
 
-    const change = () => {
-        drawCategories(calcCategories())
-        drawRandoms(calcRandoms())
-        changePartner()
-    }
-
-    const drawTraits = () => {
-        const baseDiv = document.querySelector('div#selected-traits')
-        for (const trait of DATA.traits) {
-            let catDiv = document.createElement('div')
-            catDiv.addEventListener('click', toggleTrait)
-            catDiv.setAttribute('data-trait', trait)
-            catDiv.innerHTML = `<span>${trait}</span>`
-            baseDiv.appendChild(catDiv)
-        }
-    }
-
-    const drawPartnerTraits = () => {
-        const baseDiv = document.querySelector('div#partner-traits')
-        for (const trait of DATA.traits) {
-            let catDiv = document.createElement('div')
-            catDiv.addEventListener('click', togglePartnerTrait)
-            catDiv.setAttribute('data-trait', trait)
-            catDiv.innerHTML = `<span>${trait}</span>`
-            baseDiv.appendChild(catDiv)
-        }
-    }
-
-    function toggleTrait() {
-        _toggleTrait(this, INFO.personTraits)
-        change()
-    }
-
-    function togglePartnerTrait() {
-        _toggleTrait(this, INFO.partnerTraits)
-        changePartner()
-    }
-
-    const _toggleTrait = (obj, set) => {
-        const trait = obj.getAttribute('data-trait')
-        if (set.has(trait)) {
-            set.delete(trait)
-            obj.classList.remove('yellow')
-        } else {
-            set.add(trait)
-            obj.classList.add('yellow')
-        }
-    }
-
-    const changePartner = () => {
-        let [person2partnerScore, partner2personScore, compatibilityScore] = calcScores()
-        drawScores(person2partnerScore, partner2personScore, compatibilityScore)
+    const processPartner = () => {
+        calcScores()
+        drawScores()
     }
 
     const calcScores = () => {
-        let person2partnerScore = 0
-        let partner2personScore = 0
+        INFO.personScore = 0
+        INFO.partnerScore = 0
         for (let compatibility of DATA.compatibility) {
-            if (INFO.personTraits.has(compatibility.value)) {
-                person2partnerScore += compatibility.map.map(v => INFO.partnerTraits.has(v.trait) ? v.weight : 0).reduce((a, b) => a + b, 0)
-            }
-            if (INFO.partnerTraits.has(compatibility.value)) {
-                partner2personScore += compatibility.map.map(v => INFO.personTraits.has(v.trait) ? v.weight : 0).reduce((a, b) => a + b, 0)
-            }
+            INFO.personScore += calcCompatibilityByTrait(compatibility, INFO.partnerTraits, INFO.personTraits)
+            INFO.partnerScore += calcCompatibilityByTrait(compatibility, INFO.personTraits, INFO.partnerTraits)
         }
-        let compatibilityScore = calcCompatibilityScore(person2partnerScore, partner2personScore)
-        INFO.personScore = person2partnerScore
-        INFO.partnerScore = partner2personScore
-        INFO.compatibilityScore = compatibilityScore
-        return [person2partnerScore, partner2personScore, compatibilityScore]
+        INFO.compatibilityScore = calcCompatibilityScore()
     }
 
-    const calcCompatibilityScore = (person2partnerScore, partner2personScore) => {
-        let avg = (person2partnerScore + partner2personScore) / 2
-        let D = Math.abs(person2partnerScore - partner2personScore)
+    const calcCompatibilityByTrait = (compatibility, traitsSet, otherTraitsSet) => {
+        if (!otherTraitsSet.has(compatibility.value)) return 0
+        return compatibility.map.map(v => traitsSet.has(v.trait) ? v.weight : 0).reduce((a, b) => a + b, 0)
+    }
+
+    const calcCompatibilityScore = () => {
+        let avg = (INFO.personScore + INFO.partnerScore) / 2
+        let D = Math.abs(INFO.personScore - INFO.partnerScore)
         let top = 10
         let baseScore = (avg - D * 0.32) * 100 / top
-        let person2partnerPenalty = Math.min(Math.sign(person2partnerScore), 0) * top
-        let partner2personPenalty = Math.min(Math.sign(partner2personScore), 0) * top
+        let person2partnerPenalty = Math.min(Math.sign(INFO.personScore), 0) * top
+        let partner2personPenalty = Math.min(Math.sign(INFO.partnerScore), 0) * top
         return Math.round(baseScore + partner2personPenalty + person2partnerPenalty) / 10
     }
 
-    const drawScores = (person2partnerScore, partner2personScore, compatibilityScore) => {
+    const drawScores = () => {
         const root = document.querySelector('#compatibility-results')
-        root.querySelector('.personScore').textContent = person2partnerScore
-        root.querySelector('.partnerScore').textContent = partner2personScore
-        root.querySelector('.compatibilityScore').textContent = compatibilityScore
+        root.querySelector('.personScore').textContent = INFO.personScore
+        root.querySelector('.partnerScore').textContent = INFO.partnerScore
+        root.querySelector('.compatibilityScore').textContent = INFO.compatibilityScore
     }
 
     const setNames = () => {
@@ -4717,7 +4666,7 @@
         }
     }
 
-    function changeName(e) {
+    function changeName() {
         let tp = this.classList[0]
         INFO[tp] = this.textContent
         document.querySelectorAll(`#compatibility-results .${tp}`).forEach(v => {
@@ -4725,71 +4674,10 @@
         })
     }
 
-    const calcRandoms = () => {
-        return DATA.randoms.map((v) => calcRandom(v))
-    }
-
-    const calcRandom = (category) => {
-        let i = Math.floor(Math.random() * category.values.length)
-        return {
-            category: category.category,
-            value: category.values[i],
-            weight: Math.floor(Math.random() * 2) * 2 - 1
-        }
-    }
-
-    const drawCategories = (drawData) => {
-        const baseDiv = document.querySelector('div#result')
-        baseDiv.innerHTML = ''
-        for (const category of drawData) {
-            let catDiv = document.createElement('div')
-            catDiv.innerHTML = `<p><b>${category.category}</b></p>`
-            for (const value of category.values) {
-                catDiv.innerHTML += `<div class="${getClass(value.sum)}"><span>${value.value}</span></div>`
-            }
-            baseDiv.appendChild(catDiv)
-        }
-    }
-
-    const drawRandoms = (randomData) => {
-        const baseDiv = document.querySelector('div#random')
-        baseDiv.innerHTML = ''
-        for (const category of randomData) {
-            let catDiv = document.createElement('div')
-            catDiv.innerHTML = `<p>${category.category}:</p>`
-            catDiv.innerHTML += `<div class="${getClass(category.weight)}">${category.value}</div>`
-            baseDiv.appendChild(catDiv)
-        }
-    }
-
     const getClass = (num) => {
         if (num > 0) return 'green'
         if (num < 0) return 'red'
         return 'gray'
-    }
-
-    const calcCategories = () => {
-        return DATA.categories.map((v) => calcCategory(v))
-    }
-
-    const calcCategory = (category) => {
-        return {
-            category: category.name,
-            values: category.values.map((v) => calcCategoryValue(v))
-        }
-    }
-
-    const calcCategoryValue = (categoryValue) => {
-        const sum = categoryValue['map'].reduce((p, c) => {
-            if (INFO.personTraits.has(c.trait)) {
-                p += c.weight
-            }
-            return p
-        }, 0)
-        return {
-            value: categoryValue.value,
-            sum: sum,
-        }
     }
 
     const clearHistory = () => {
@@ -4804,7 +4692,7 @@
         localStorage.setItem('HISTORY', JSON.stringify(HISTORY))
     }
 
-    function removeRow(e) {
+    function removeRow() {
         let tr = this.closest('tr')
         let idx = Array.from(document.querySelector('#history tbody').children).indexOf(tr)
         tr.remove()
@@ -4812,41 +4700,36 @@
         localStorage.setItem('HISTORY', JSON.stringify(HISTORY.map(v=>v.toJSON())))
     }
 
-    function setInfoFromHistory(e) {
+    function setInfoFromHistory() {
         let idx = Array.from(document.querySelector('#history tbody').children).indexOf(this)
-        INFO = Info.fromJSON(HISTORY[idx].toJSON())
-        change()
-        for (p of ['person', 'partner']) {
-            document.querySelectorAll(`.${p}`).forEach(v=> {
-                v.textContent = INFO[p]
-            })
-        }
-        setTraits()
-    }
-
-    const setTraits = () => {
-        document.querySelectorAll('#selected-traits>div, #partner-traits>div').forEach(v => {
-            v.classList.remove('yellow')
-        })
-        Array.from(INFO.personTraits).forEach(v => {
-            document.querySelector(`#selected-traits>div[data-trait="${v}"]`).classList.add('yellow')
-        })
-        Array.from(INFO.partnerTraits).forEach(v => {
-            document.querySelector(`#partner-traits>div[data-trait="${v}"]`).classList.add('yellow')
-        })
+        let info = Info.fromJSON(HISTORY[idx].toJSON())
+        INFO.person = info.person
+        INFO.partner = info.partner
+        INFO.personScore = info.personScore
+        INFO.partnerScore = info.partnerScore
+        INFO.compatibilityScore = info.compatibilityScore
+        INFO.personTraits = info.personTraits
+        INFO.partnerTraits = info.partnerTraits
+        categories.data.traits = INFO.personTraits
+        randoms.data.traits = INFO.personTraits
+        st2.data.selectedTraits = INFO.personTraits
+        pt2.data.selectedTraits = INFO.partnerTraits
+        processPartner()
+        setNames()
     }
 
     const clearTraits = () => {
         INFO.personTraits.clear()
-        INFO.partnerTraits.clear()
-        setTraits()
-        change()
+        categories.data.traits = INFO.personTraits
+        randoms.data.traits = categories.data.traits
+        st2.data.selectedTraits = randoms.data.traits
+        clearPartnerTraits()
     }
 
     const clearPartnerTraits = () => {
         INFO.partnerTraits.clear()
-        setTraits()
-        changePartner()
+        pt2.data.selectedTraits = INFO.partnerTraits
+        processPartner()
     }
 
     const addHistory = (info) => {
@@ -4892,13 +4775,91 @@
         this.parentNode.querySelectorAll('.tab-body>.tab')[idx].classList.add('selected')
     }
 
+    let st2, pt2, categories, randoms
+
+    const getTraitComponent = (id, selectedTraits) => {
+        return new Component({
+            root: id,
+            data: {
+                selectedTraits: selectedTraits,
+            },
+            actions: {
+                'toggleTrait': function (trait) {
+                    if (this.selectedTraits.has(trait)) this.selectedTraits.delete(trait)
+                    else this.selectedTraits.add(trait)
+                    processPartner()
+                }
+            },
+            template: () => {
+                return '<div @for="DATA.traits">' +
+                    '<div @on:click="actions.toggleTrait(loop.item)" ' +
+                    ':class="{{self.selectedTraits.has(loop.item) ? \'yellow\' : \'\'}}"><span>{{loop.item}}</span></div>' +
+                    '</div>'
+            }
+        })
+    }
+
     const init = () => {
         document.querySelector('.tab-header').addEventListener('click', switchTab)
         document.querySelectorAll('.person, .partner').forEach(v=> v.addEventListener('input', changeName))
         DATA = loadData()
-        drawTraits()
-        drawPartnerTraits()
-        change()
+        categories = new Component({
+            root: document.querySelector('#result'),
+            data: {
+                traits: INFO.personTraits
+            },
+            actions: {
+                calcClassName: function (categoryValue) {
+                    let sum = categoryValue['map'].reduce((p, c) => {
+                        if (this.traits.has(c.trait)) {
+                            p += c.weight
+                        }
+                        return p
+                    }, 0)
+                    return getClass(sum)
+                }
+            },
+            template: () => {
+                return '<div @for="DATA.categories">' +
+                    '<div>' +
+                    '<p><b>{{loop.item.name}}</b></p>' +
+                    '<div @for="loop.item.values">' +
+                    '<div :class="{{actions.calcClassName.call(self, loop.item)}}">' +
+                    '<span>{{loop.item.value}}</span>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>'
+            }
+        })
+        randoms = new Component({
+            root: document.querySelector('#random'),
+            data: {
+                traits: categories.data.traits
+            },
+            actions: {
+                calcClassName: function () {
+                    let weight = Math.floor(Math.random() * 2) * 2 - 1
+                    return getClass(weight)
+                },
+                getValue: function (category) {
+                    let i = Math.floor(Math.random() * category.values.length)
+                    return category.values[i]
+                }
+            },
+            template: () => {
+                return '<div @for="DATA.randoms">' +
+                    '<div>' +
+                    '<p><b>{{loop.item.category}}</b></p>' +
+                    '<div :class="{{actions.calcClassName.call(self)}}">' +
+                    '<span>{{actions.getValue.call(self, loop.item)}}</span>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>'
+            }
+        })
+        st2 = getTraitComponent(document.querySelector('#selected-traits'), randoms.data.traits)
+        pt2 = getTraitComponent(document.querySelector('#partner-traits'), INFO.partnerTraits)
         setNames()
         HISTORY = JSON.parse(localStorage.getItem('HISTORY') || '[]').map(v => Info.fromJSON(v))
         HISTORY.forEach(v => addHistory(v))
