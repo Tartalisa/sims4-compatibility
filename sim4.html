@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Sims 4</title>
     <style>
-        body {
+        #main > div {
             display: flex;
             flex-direction: row;
             gap: 10px;
@@ -20,6 +20,7 @@
         table thead {
             border: 1px solid black;
         }
+
         table td {
             padding: 12px;
         }
@@ -36,7 +37,7 @@
             text-align: left;
         }
 
-        table tbody tr td:nth-child(1), table tbody tr td:nth-child(3) , table tbody tr td:nth-child(6) {
+        table tbody tr td:nth-child(1), table tbody tr td:nth-child(3), table tbody tr td:nth-child(6) {
             text-align: right;
         }
 
@@ -48,7 +49,7 @@
             font-size: 0.8em;
         }
 
-        #selected-traits>div:hover:not(.yellow), #partner-traits>div:hover:not(.yellow) {
+        #selected-traits > div:hover:not(.yellow), #partner-traits > div:hover:not(.yellow) {
             background-color: #fffadc;
         }
 
@@ -65,7 +66,7 @@
             width: 75%;
         }
 
-        #result, #random, #selected-traits, #partner-traits, #compatibility {
+        #result, #random, #selected-traits, #partner-traits, #compatibility > div {
             display: flex;
             flex-flow: row wrap;
             align-items: flex-start;
@@ -120,18 +121,18 @@
             background-color: #adadad;
         }
 
-        .tab-body>.tab {
+        .tab-body > .tab {
             display: none;
         }
 
-        .tab-body>.tab.selected {
+        .tab-body > .tab.selected {
             display: block;
         }
 
     </style>
 </head>
 <body>
-<script src="mkreator.js"></script>
+<script src="mkreactor.js"></script>
 <script id="data" type="application/json">
     {
         "traits": [
@@ -4590,6 +4591,7 @@
             this.personTraits = new Set()
             this.partnerTraits = new Set()
         }
+
         static fromJSON(json) {
             let info = new Info()
             info.person = json['person']
@@ -4601,6 +4603,7 @@
             info.partnerTraits = new Set(json['partnerTraits'])
             return info
         }
+
         toJSON() {
             return {
                 'person': this.person,
@@ -4615,25 +4618,9 @@
     }
 
     let DATA = {}
-    let INFO = new Info()
-    let HISTORY = []
+
     const loadData = () => {
         return JSON.parse(document.querySelector('#data').textContent)
-    }
-
-    const processPartner = () => {
-        calcScores()
-        drawScores()
-    }
-
-    const calcScores = () => {
-        INFO.personScore = 0
-        INFO.partnerScore = 0
-        for (let compatibility of DATA.compatibility) {
-            INFO.personScore += calcCompatibilityByTrait(compatibility, INFO.partnerTraits, INFO.personTraits)
-            INFO.partnerScore += calcCompatibilityByTrait(compatibility, INFO.personTraits, INFO.partnerTraits)
-        }
-        INFO.compatibilityScore = calcCompatibilityScore()
     }
 
     const calcCompatibilityByTrait = (compatibility, traitsSet, otherTraitsSet) => {
@@ -4641,37 +4628,14 @@
         return compatibility.map.map(v => traitsSet.has(v.trait) ? v.weight : 0).reduce((a, b) => a + b, 0)
     }
 
-    const calcCompatibilityScore = () => {
-        let avg = (INFO.personScore + INFO.partnerScore) / 2
-        let D = Math.abs(INFO.personScore - INFO.partnerScore)
+    const calcCompatibilityScore = (personScore, partnerScore) => {
+        let avg = (personScore + partnerScore) / 2
+        let D = Math.abs(personScore - partnerScore)
         let top = 10
         let baseScore = (avg - D * 0.32) * 100 / top
-        let person2partnerPenalty = Math.min(Math.sign(INFO.personScore), 0) * top
-        let partner2personPenalty = Math.min(Math.sign(INFO.partnerScore), 0) * top
+        let person2partnerPenalty = Math.min(Math.sign(personScore), 0) * top
+        let partner2personPenalty = Math.min(Math.sign(partnerScore), 0) * top
         return Math.round(baseScore + partner2personPenalty + person2partnerPenalty) / 10
-    }
-
-    const drawScores = () => {
-        const root = document.querySelector('#compatibility-results')
-        root.querySelector('.personScore').textContent = INFO.personScore
-        root.querySelector('.partnerScore').textContent = INFO.partnerScore
-        root.querySelector('.compatibilityScore').textContent = INFO.compatibilityScore
-    }
-
-    const setNames = () => {
-        for (let k of ['person', 'partner']) {
-            document.querySelectorAll(`#compatibility-results .${k}`).forEach(v => {
-                v.textContent = INFO[k]
-            })
-        }
-    }
-
-    function changeName() {
-        let tp = this.classList[0]
-        INFO[tp] = this.textContent
-        document.querySelectorAll(`#compatibility-results .${tp}`).forEach(v => {
-            if (v.textContent !== INFO[tp]) v.textContent = INFO[tp]
-        })
     }
 
     const getClass = (num) => {
@@ -4680,240 +4644,235 @@
         return 'gray'
     }
 
-    const clearHistory = () => {
-        HISTORY.splice(0, HISTORY.length)
-        localStorage.setItem('HISTORY', JSON.stringify(HISTORY))
-        document.querySelector('#history tbody').innerHTML = ''
+    const setData = (info) => {
+        main.data.info = Info.fromJSON(info.toJSON())
     }
 
-    const addToHistory = () => {
-        HISTORY.push(Info.fromJSON(JSON.parse(JSON.stringify(INFO.toJSON()))))
-        addHistory(INFO)
-        localStorage.setItem('HISTORY', JSON.stringify(HISTORY))
-    }
-
-    function removeRow() {
-        let tr = this.closest('tr')
-        let idx = Array.from(document.querySelector('#history tbody').children).indexOf(tr)
-        tr.remove()
-        HISTORY.splice(idx, 1)
-        localStorage.setItem('HISTORY', JSON.stringify(HISTORY.map(v=>v.toJSON())))
-    }
-
-    function setInfoFromHistory() {
-        let idx = Array.from(document.querySelector('#history tbody').children).indexOf(this)
-        let info = Info.fromJSON(HISTORY[idx].toJSON())
-        INFO.person = info.person
-        INFO.partner = info.partner
-        INFO.personScore = info.personScore
-        INFO.partnerScore = info.partnerScore
-        INFO.compatibilityScore = info.compatibilityScore
-        INFO.personTraits = info.personTraits
-        INFO.partnerTraits = info.partnerTraits
-        categories.data.traits = INFO.personTraits
-        randoms.data.traits = INFO.personTraits
-        st2.data.selectedTraits = INFO.personTraits
-        pt2.data.selectedTraits = INFO.partnerTraits
-        processPartner()
-        setNames()
-    }
-
-    const clearTraits = () => {
-        INFO.personTraits.clear()
-        categories.data.traits = INFO.personTraits
-        randoms.data.traits = categories.data.traits
-        st2.data.selectedTraits = randoms.data.traits
-        clearPartnerTraits()
-    }
-
-    const clearPartnerTraits = () => {
-        INFO.partnerTraits.clear()
-        pt2.data.selectedTraits = INFO.partnerTraits
-        processPartner()
-    }
-
-    const addHistory = (info) => {
-        const tr = document.createElement('tr')
-        for (let data of [
-            info.person,
-            info.personScore,
-            info.partner,
-            info.partnerScore,
-            info.compatibilityScore
-        ]) {
-            let td = document.createElement('td')
-            td.textContent = formatInfo(data)
-            tr.appendChild(td)
-        }
-        let td = document.createElement('td')
-        let span = document.createElement('span')
-        span.classList.add('close-button')
-        span.innerHTML = '&#10799;'
-        span.addEventListener('click', removeRow)
-        td.appendChild(span)
-        tr.appendChild(td)
-        tr.addEventListener('dblclick', setInfoFromHistory)
-        document.querySelector('#history tbody').appendChild(tr)
-    }
-
-    const formatInfo = (data) => {
-        if (data instanceof Set) {
-            return Array.from(data).join(', ')
-        }
-        return data
-    }
-
-    function switchTab(e) {
-        if (!e.target.classList.contains('tab-name'))
-            return
-        if (e.target.classList.contains('selected'))
-            return
-        this.querySelector('.tab-name.selected').classList.remove('selected')
-        e.target.classList.add('selected')
-        let idx = Array.from(this.children).indexOf(e.target)
-        this.parentNode.querySelector('.tab-body>.tab.selected').classList.remove('selected')
-        this.parentNode.querySelectorAll('.tab-body>.tab')[idx].classList.add('selected')
-    }
-
-    let st2, pt2, categories, randoms
-
-    const getTraitComponent = (id, selectedTraits) => {
-        return new Component({
-            root: id,
-            data: {
-                selectedTraits: selectedTraits,
-            },
-            actions: {
-                'toggleTrait': function (trait) {
-                    if (this.selectedTraits.has(trait)) this.selectedTraits.delete(trait)
-                    else this.selectedTraits.add(trait)
-                    processPartner()
-                }
-            },
-            template: () => {
-                return '<div @for="DATA.traits">' +
-                    '<div @on:click="actions.toggleTrait(loop.item)" ' +
-                    ':class="{{self.selectedTraits.has(loop.item) ? \'yellow\' : \'\'}}"><span>{{loop.item}}</span></div>' +
-                    '</div>'
-            }
-        })
-    }
+    let main
 
     const init = () => {
-        document.querySelector('.tab-header').addEventListener('click', switchTab)
-        document.querySelectorAll('.person, .partner').forEach(v=> v.addEventListener('input', changeName))
         DATA = loadData()
-        categories = new Component({
-            root: document.querySelector('#result'),
-            data: {
-                traits: INFO.personTraits
-            },
-            actions: {
-                calcClassName: function (categoryValue) {
-                    let sum = categoryValue['map'].reduce((p, c) => {
-                        if (this.traits.has(c.trait)) {
-                            p += c.weight
-                        }
-                        return p
-                    }, 0)
-                    return getClass(sum)
-                }
-            },
-            template: () => {
-                return '<div @for="DATA.categories">' +
+        registerComponent('CATEGORIES', () => {
+            return {
+                data: {
+                    categories: []
+                },
+                actions: {
+                    calcClassName: function (categoryValue) {
+                        let sum = categoryValue['map'].reduce((p, c) => {
+                            if (this.traits.has(c.trait)) {
+                                p += c.weight
+                            }
+                            return p
+                        }, 0)
+                        return getClass(sum)
+                    }
+                },
+                template: '<div @for="self.categories">' +
                     '<div>' +
                     '<p><b>{{loop.item.name}}</b></p>' +
                     '<div @for="loop.item.values">' +
-                    '<div :class="{{actions.calcClassName.call(self, loop.item)}}">' +
-                    '<span>{{loop.item.value}}</span>' +
-                    '</div>' +
+                    '<div :class="{{actions.calcClassName.call(self, loop.item)}}">{{loop.item.value}}</div>' +
                     '</div>' +
                     '</div>' +
                     '</div>'
             }
         })
-        randoms = new Component({
-            root: document.querySelector('#random'),
-            data: {
-                traits: categories.data.traits
-            },
-            actions: {
-                calcClassName: function () {
-                    let weight = Math.floor(Math.random() * 2) * 2 - 1
-                    return getClass(weight)
+        registerComponent('RANDOMS', () => {
+            return {
+                data: {
+                    randoms: []
                 },
-                getValue: function (category) {
-                    let i = Math.floor(Math.random() * category.values.length)
-                    return category.values[i]
-                }
-            },
-            template: () => {
-                return '<div @for="DATA.randoms">' +
+                actions: {
+                    calcClassName: function () {
+                        let weight = Math.floor(Math.random() * 2) * 2 - 1
+                        return getClass(weight)
+                    },
+                    getValue: function (category) {
+                        let i = Math.floor(Math.random() * category.values.length)
+                        return category.values[i]
+                    }
+                },
+                template: '<div @for="self.randoms">' +
                     '<div>' +
                     '<p><b>{{loop.item.category}}</b></p>' +
-                    '<div :class="{{actions.calcClassName.call(self)}}">' +
-                    '<span>{{actions.getValue.call(self, loop.item)}}</span>' +
+                    '<div :class="{{actions.calcClassName.call(self)}}">{{actions.getValue.call(self, loop.item)}}' +
                     '</div>' +
                     '</div>' +
                     '</div>'
             }
         })
-        st2 = getTraitComponent(document.querySelector('#selected-traits'), randoms.data.traits)
-        pt2 = getTraitComponent(document.querySelector('#partner-traits'), INFO.partnerTraits)
-        setNames()
-        HISTORY = JSON.parse(localStorage.getItem('HISTORY') || '[]').map(v => Info.fromJSON(v))
-        HISTORY.forEach(v => addHistory(v))
+        registerComponent('TRAITS', () => {
+            return {
+                data: {
+                    info: {},
+                    traitsource: ''
+                },
+                actions: {
+                    'toggleTrait': function (trait) {
+                        if (this.info[this.traitsource].has(trait)) this.info[this.traitsource].delete(trait)
+                        else this.info[this.traitsource].add(trait)
+                        this.info.personScore = 0
+                        this.info.partnerScore = 0
+                        for (let compatibility of DATA.compatibility) {
+                            this.info.personScore += calcCompatibilityByTrait(compatibility, this.info.partnerTraits, this.info.personTraits)
+                            this.info.partnerScore += calcCompatibilityByTrait(compatibility, this.info.personTraits, this.info.partnerTraits)
+                        }
+                        this.info.compatibilityScore = calcCompatibilityScore(this.info.personScore, this.info.partnerScore)
+                    }
+                },
+                template: '<div @for="DATA.traits">' +
+                    '<div @on:click="actions.toggleTrait(loop.item)" ' +
+                    ':class="{{self.info[self.traitsource].has(loop.item) ? \'yellow\' : \'\'}}"><span>{{loop.item}}</span></div>' +
+                    '</div>'
+            }
+        })
+        registerComponent('COMPARISON', () => {
+            return {
+                data: {
+                    info: {},
+                    history: JSON.parse(localStorage.getItem('HISTORY') || '[]').map(v => Info.fromJSON(v))
+                },
+                actions: {
+                    clearHistory: function () {
+                        localStorage.removeItem('HISTORY')
+                        this.history = []
+                    },
+                    setPersonName: function (newValue) {
+                        this.info.person = newValue
+                    },
+                    setPartnerName: function (newValue) {
+                        this.info.partner = newValue
+                    },
+                    addToHistory: function () {
+                        this.history.push(Info.fromJSON(this.info.toJSON()))
+                        localStorage.setItem('HISTORY', JSON.stringify(this.history))
+                    },
+                    removeHistoryData: function (idx) {
+                        this.history.splice(idx, 1)
+                        localStorage.setItem('HISTORY', JSON.stringify(this.history))
+                    },
+                    setHistoryData: function (data) {
+                        setData(data)
+                    },
+                },
+                template: '<div>' +
+                    '<p><input :value="{{self.info.person}}" @on:change="actions.setPersonName(event.target.value)">' +
+                    ' &#8594; <span>{{self.info.personScore}}</span> &#8594; ' +
+                    '<input :value="{{self.info.partner}}" @on:change="actions.setPartnerName(event.target.value)"></p>' +
+                    '<p><span>{{self.info.person}}</span>' +
+                    ' &#8592; <span>{{self.info.partnerScore}}</span> &#8592; ' +
+                    '<span>{{self.info.partner}}</span></p>' +
+                    '<p>Совместимость: <span>{{self.info.compatibilityScore}}</span></p>' +
+                    '<div>' +
+                    '<button @on:click="actions.addToHistory()">Сохранить</button>' +
+                    '<button @on:click="actions.clearHistory()">Очистить таблицу</button>' +
+                    '</div>' +
+                    '<br>' +
+                    '<table id="history" style="width: 100%">' +
+                    '<thead>' +
+                    '<tr><td colspan="2">Персонаж</td><td colspan="2">Партнер</td>' +
+                    '<td rowspan="2" colspan="2" style="width: 10%">Совместимость</td></tr>' +
+                    '<tr><td>Имя</td><td>Баллы</td><td>Имя</td><td>Баллы</td></tr>' +
+                    '</thead>' +
+                    '<tbody @for="self.history" @hold>' +
+                    '<tr @on:dblclick="actions.setHistoryData(loop.item)">' +
+                    '<td>{{loop.item.person}}</td>' +
+                    '<td>{{loop.item.personScore}}</td>' +
+                    '<td>{{loop.item.partner}}</td>' +
+                    '<td>{{loop.item.partnerScore}}</td>' +
+                    '<td>{{loop.item.compatibilityScore}}</td>' +
+                    '<td><span @on:click="actions.removeHistoryData(loop.index)" class="close-button">&#10799;</span></td>' +
+                    '</tr>' +
+                    '</tbody>' +
+                    '</table>' +
+                    '</div>'
+            }
+        })
+        registerComponent('CATEGORIES-TAB', () => {
+            return {
+                data: {
+                    info: {}
+                },
+                template: '<div>' +
+                    '<categories id="result" :traits="{{self.info.personTraits}}" :categories="{{DATA.categories}}"></categories>' +
+                    '<randoms id="random" :randoms="{{DATA.randoms}}"></randoms>' +
+                    '</div>'
+            }
+        })
+        registerComponent('COMPARISON-TAB', () => {
+            return {
+                data: {
+                    info: {}
+                },
+                template: '<div>' +
+                    '<comparison id="compatibility-results" :info="{{self.info}}"></comparison>' +
+                    '<traits id="partner-traits" :info="{{self.info}}" :traitSource="{{\'partnerTraits\'}}"></traits>' +
+                    '</div>'
+            }
+        })
+        registerComponent('TABS', () => {
+            return {
+                data: {
+                    info: {},
+                    selectedTab: 'categories'
+                },
+                actions: {
+                    setTab: function(tab) {
+                        this.selectedTab = tab
+                    },
+                    clearTraits: function() {
+                        this.info.partnerTraits.clear()
+                        this.info.personScore = 0
+                        this.info.partnerScore = 0
+                        this.info.compatibilityScore = 0
+                    }
+                },
+                template: '<div>' +
+                    '<div class="tab-header">' +
+                    '   <h2 @on:click="actions.setTab(\'categories\')" :class="tab-name {{self.selectedTab === \'categories\' ? \'selected\': \'\'}}">Категории и предпочтения</h2>' +
+                    '   <h2 @on:click="actions.setTab(\'compatibility\')" :class="tab-name {{self.selectedTab === \'compatibility\' ? \'selected\': \'\'}}">' +
+                    '       Совместимость <button @on:click="actions.clearTraits()">Очистить ЧХ</button>' +
+                    '   </h2>' +
+                    '</div>' +
+                    '<div class="tab-body">' +
+                    '<div :class="tab {{self.selectedTab === \'categories\' ? \'selected\': \'\'}}">' +
+                    '<categories-tab :info="{{self.info}}" id="results"></categories-tab>' +
+                    '</div>' +
+                    '<div :class="tab {{self.selectedTab === \'compatibility\' ? \'selected\': \'\'}}">' +
+                    '<comparison-tab :info="{{self.info}}" id="compatibility"></comparison-tab>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div></div>'
+
+            }
+        })
+        main = new Component({
+            root: document.querySelector('#main'),
+            data: {
+                info: new Info(),
+            },
+            actions: {
+                clearTraits: function() {
+                    this.info.personTraits.clear()
+                    this.info.partnerTraits.clear()
+                    this.info.personScore = 0
+                    this.info.partnerScore = 0
+                    this.info.compatibilityScore = 0
+                }
+            },
+            template: '<div>' +
+                '<div class="side-menu">' +
+                '<h2>Черты характера <button @on:click="actions.clearTraits()">Очистить все</button></h2>' +
+                '<traits :info="{{self.info}}" :traitSource="{{\'personTraits\'}}" id="selected-traits"></traits>' +
+                '</div>' +
+                '<main><tabs :info="{{self.info}}" class="tab-container"></tabs></main>' +
+                '</div>'
+        })
     }
 
     document.addEventListener('DOMContentLoaded', init)
 </script>
-<div class="side-menu">
-    <h2>Черты характера <button onclick="clearTraits()">Очистить все</button></h2>
-    <div id="selected-traits"></div>
-</div>
-<main>
-    <div class="tab-container">
-        <div class="tab-header">
-            <h2 class="tab-name selected">Категории и предпочтения</h2>
-            <h2 class="tab-name">Совместимость <button onclick="clearPartnerTraits()">Очистить ЧХ</button></h2>
-        </div>
-        <div class="tab-body">
-            <div class="tab selected">
-                <div id="result"></div>
-                <div id="random"></div>
-            </div>
-            <div class="tab">
-                <div id="compatibility">
-                    <div id="compatibility-results">
-                        <p><span class="person" contenteditable></span> &#8594; <span class="personScore">0</span> &#8594; <span
-                                class="partner" contenteditable></span></p>
-                        <p><span class="person" contenteditable></span> &#8592; <span class="partnerScore">0</span> &#8592; <span
-                                class="partner" contenteditable></span></p>
-                        <p>Совместимость: <span class="compatibilityScore">0</span></p>
-                        <button onclick="addToHistory()">Сохранить</button> <button onclick="clearHistory()">Очистить таблицу</button><br>
-                        <br>
-                        <table id="history" style="width: 100%">
-                            <thead>
-                            <tr>
-                                <td colspan="2">Персонаж</td>
-                                <td colspan="2">Партнер</td>
-                                <td rowspan="2" colspan="2" style="width: 10%">Совместимость</td>
-                            </tr>
-                            <tr>
-                                <td>Имя</td>
-                                <td>Баллы</td>
-                                <td>Имя</td>
-                                <td>Баллы</td>
-                            </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                    <div id="partner-traits"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</main>
+<div id="main"></div>
 </body>
 </html>
