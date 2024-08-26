@@ -4705,25 +4705,14 @@
         registerComponent('TRAITS', () => {
             return {
                 data: {
-                    info: {},
-                    traitsource: ''
+                    selectedtraits: new Set(),
                 },
-                actions: {
-                    'toggleTrait': function (trait) {
-                        if (this.info[this.traitsource].has(trait)) this.info[this.traitsource].delete(trait)
-                        else this.info[this.traitsource].add(trait)
-                        this.info.personScore = 0
-                        this.info.partnerScore = 0
-                        for (let compatibility of DATA.compatibility) {
-                            this.info.personScore += calcCompatibilityByTrait(compatibility, this.info.partnerTraits, this.info.personTraits)
-                            this.info.partnerScore += calcCompatibilityByTrait(compatibility, this.info.personTraits, this.info.partnerTraits)
-                        }
-                        this.info.compatibilityScore = calcCompatibilityScore(this.info.personScore, this.info.partnerScore)
-                    }
+                events: {
+                    updatetrait: (trait) => {}
                 },
                 template: '<div @for="DATA.traits">' +
-                    '<div @on:click="actions.toggleTrait(loop.item)" ' +
-                    ':class="{{self.info[self.traitsource].has(loop.item) ? \'yellow\' : \'\'}}"><span>{{loop.item}}</span></div>' +
+                    '<div @on:click="events.updatetrait(loop.item)" ' +
+                    ':class="{{self.selectedtraits.has(loop.item) ? \'yellow\' : \'\'}}"><span>{{loop.item}}</span></div>' +
                     '</div>'
             }
         })
@@ -4757,9 +4746,9 @@
                     },
                 },
                 template: '<div>' +
-                    '<p><input :value="{{self.info.person}}" @on:change="actions.setPersonName(event.target.value)">' +
+                    '<p><input :value="{{self.info.person}}" @on:input="actions.setPersonName(event.target.value)">' +
                     ' &#8594; <span>{{self.info.personScore}}</span> &#8594; ' +
-                    '<input :value="{{self.info.partner}}" @on:change="actions.setPartnerName(event.target.value)"></p>' +
+                    '<input :value="{{self.info.partner}}" @on:input="actions.setPartnerName(event.target.value)"></p>' +
                     '<p><span>{{self.info.person}}</span>' +
                     ' &#8592; <span>{{self.info.partnerScore}}</span> &#8592; ' +
                     '<span>{{self.info.partner}}</span></p>' +
@@ -4807,7 +4796,7 @@
                 },
                 template: '<div>' +
                     '<comparison id="compatibility-results" :info="{{self.info}}"></comparison>' +
-                    '<traits id="partner-traits" :info="{{self.info}}" :traitSource="{{\'partnerTraits\'}}"></traits>' +
+                    '<traits id="partner-traits" :selectedtraits="{{self.info.partnerTraits}}" @on:updatetrait="{{events.updatetrait}}"></traits>' +
                     '</div>'
             }
         })
@@ -4819,20 +4808,18 @@
                 },
                 actions: {
                     setTab: function(tab) {
+                        console.log('setTab', tab)
                         this.selectedTab = tab
-                    },
-                    clearTraits: function() {
-                        this.info.partnerTraits.clear()
-                        this.info.personScore = 0
-                        this.info.partnerScore = 0
-                        this.info.compatibilityScore = 0
                     }
+                },
+                events: {
+                    clearpartnertraits: () => {}
                 },
                 template: '<div>' +
                     '<div class="tab-header">' +
                     '   <h2 @on:click="actions.setTab(\'categories\')" :class="tab-name {{self.selectedTab === \'categories\' ? \'selected\': \'\'}}">Категории и предпочтения</h2>' +
                     '   <h2 @on:click="actions.setTab(\'compatibility\')" :class="tab-name {{self.selectedTab === \'compatibility\' ? \'selected\': \'\'}}">' +
-                    '       Совместимость <button @on:click="actions.clearTraits()">Очистить ЧХ</button>' +
+                    '       Совместимость <button @on:click="events.clearpartnertraits()">Очистить ЧХ</button>' +
                     '   </h2>' +
                     '</div>' +
                     '<div class="tab-body">' +
@@ -4840,7 +4827,7 @@
                     '<categories-tab :info="{{self.info}}" id="results"></categories-tab>' +
                     '</div>' +
                     '<div :class="tab {{self.selectedTab === \'compatibility\' ? \'selected\': \'\'}}">' +
-                    '<comparison-tab :info="{{self.info}}" id="compatibility"></comparison-tab>' +
+                    '<comparison-tab :info="{{self.info}}" @on:updatetrait="{{events.updatetrait}}" id="compatibility"></comparison-tab>' +
                     '</div>' +
                     '</div>' +
                     '</div></div>'
@@ -4859,14 +4846,47 @@
                     this.info.personScore = 0
                     this.info.partnerScore = 0
                     this.info.compatibilityScore = 0
+                },
+                clearPartnerTraits: function() {
+                    this.info.partnerTraits.clear()
+                    this.info.personScore = 0
+                    this.info.partnerScore = 0
+                    this.info.compatibilityScore = 0
+                },
+                updatePersonTraits: function(trait) {
+                    if (this.info.personTraits.has(trait)) this.info.personTraits.delete(trait)
+                    else this.info.personTraits.add(trait)
+                    this.info.personScore = 0
+                    this.info.partnerScore = 0
+                    for (let compatibility of DATA.compatibility) {
+                        this.info.personScore += calcCompatibilityByTrait(compatibility, this.info.partnerTraits, this.info.personTraits)
+                        this.info.partnerScore += calcCompatibilityByTrait(compatibility, this.info.personTraits, this.info.partnerTraits)
+                    }
+                    this.info.compatibilityScore = calcCompatibilityScore(this.info.personScore, this.info.partnerScore)
+                },
+                updatePartnerTraits: function(trait) {
+                    if (this.info.partnerTraits.has(trait)) this.info.partnerTraits.delete(trait)
+                    else this.info.partnerTraits.add(trait)
+                    this.info.personScore = 0
+                    this.info.partnerScore = 0
+                    for (let compatibility of DATA.compatibility) {
+                        this.info.personScore += calcCompatibilityByTrait(compatibility, this.info.partnerTraits, this.info.personTraits)
+                        this.info.partnerScore += calcCompatibilityByTrait(compatibility, this.info.personTraits, this.info.partnerTraits)
+                    }
+                    this.info.compatibilityScore = calcCompatibilityScore(this.info.personScore, this.info.partnerScore)
                 }
             },
             template: '<div>' +
                 '<div class="side-menu">' +
                 '<h2>Черты характера <button @on:click="actions.clearTraits()">Очистить все</button></h2>' +
-                '<traits :info="{{self.info}}" :traitSource="{{\'personTraits\'}}" id="selected-traits"></traits>' +
+                '<traits :selectedtraits="{{self.info.personTraits}}" @on:updatetrait="{{actions.updatePersonTraits}}" id="selected-traits"></traits>' +
                 '</div>' +
-                '<main><tabs :info="{{self.info}}" class="tab-container"></tabs></main>' +
+                '<main><tabs ' +
+                ':info="{{self.info}}" ' +
+                '@on:updatetrait="{{actions.updatePartnerTraits}}" ' +
+                '@on:clearpartnertraits="{{actions.clearPartnerTraits}}" ' +
+                'class="tab-container"' +
+                '></tabs></main>' +
                 '</div>'
         })
     }

@@ -28,18 +28,45 @@ const _validator = (parent) => {
             return typeof value == 'function' ? value.bind(target) : value
         },
         set(target, key, value) {
+            if (target[key] === value) return true
             target[key] = value
+            console.log(parent.name, key, value, parent.timeoutID)
             parent.triggerRender()
             return true
         }
     }
 }
 
+const printElement = (element) => {
+    if ((element === null) || (typeof element === 'undefined')) {
+        return '$'
+    }
+    let res = printElement(element.parentElement)
+
+    return res + ">" + formatElement(element)
+}
+
+
+const formatElement = (element) => {
+    if (element instanceof Text) {
+        return `@TEXT(${element.textContent})`
+    }
+    let res = element.tagName
+    if (element.hasAttribute('id')) res = res + `#${element.getAttribute('id')}`
+    element.classList.forEach(v=> {
+        res = res + `.${v}`
+    })
+    return res
+}
+
 class Component {
-    constructor(config) {
+    constructor(config, name='MAIN') {
+        this.name = name
         this.timeoutID = 0
+        this.data_r = config.data
         this.data = new Proxy(config.data, _validator(this))
         this.actions = config.actions ?? {}
+        this.events = config.events ?? {}
         this.conditionOk = true
         this.loop = {}
         this.template = config.template
@@ -80,7 +107,6 @@ class Component {
     }
 
     mergeElements(root, realElement, virtualElement) {
-        console.log(this.root, realElement, virtualElement)
         if (realElement instanceof Text && virtualElement instanceof Text) {
             realElement.textContent = virtualElement.textContent
             return
@@ -132,10 +158,14 @@ class Component {
     }
 
     _getChildComponentRootNode(element, number, self, actions, loop) {
-        let cmp, originalNumber = number, adder = 0, extraData = {}
+        let cmp, originalNumber = number, adder = 0, extraData = {}, events = {}
         for (let attr of Array.from(element.attributes)) {
             if (attr.name.startsWith(':')) {
                 extraData[attr.name.slice(1)] = Object.values(this._parseData(self, attr.value))[0]
+            }
+            if (attr.name.startsWith('@on:')) {
+                let f = Object.values(this._parseData(self, attr.value))[0]
+                events[attr.name.slice(4)] = (...args) => f.apply(this.data, args)
             }
         }
         while (this.usedInLastRender.has(number)) {
@@ -144,14 +174,17 @@ class Component {
         }
         if (this.children.hasOwnProperty(number)) {
             cmp = this.children[number]
+            // cmp.root = document.createElement('div')
             cmp.timeoutID = -1
             Object.assign(cmp.data, extraData)
+            cmp.events = events
             cmp.render()
         } else {
             let config = COMPONENTS[element.tagName]()
             Object.assign(config.data, extraData)
+            config.events = events
             config.root = document.createElement('div')
-            cmp = new Component(config)
+            cmp = new Component(config, element.tagName)
             this.children[number] = cmp
         }
         this.usedInLastRender.add(number)
@@ -161,10 +194,11 @@ class Component {
     _traverseHTMLElement(self, element, number) {
         let actions = this.actions
         let loop = this.loop
+        let events = this.events
         let processChildren = true
         if (COMPONENTS.hasOwnProperty(element.tagName)) {
             const hash = JSON.stringify(loop.item || '').hashCode()
-            let newElement = this._getChildComponentRootNode(element, `${number}:${hash}`, self, actions, loop)
+            let newElement = this._getChildComponentRootNode(element, `${number}:${hash}`, this.data_r, actions, loop)
             Array.from(element.attributes).forEach(attr => {
                 if (!':@'.includes(attr.name[0])) newElement.setAttribute(attr.name, attr.value)
             })
@@ -228,7 +262,7 @@ class Component {
                 element[eventName] = (() => {
                     let loop = Object.assign({}, this.loop)
                     return (event) => {
-                        this.magic(value, self, actions, loop, event)
+                        this.callAction(value, self, actions, loop, event, events)
                     }
                 }).call(this)
                 let curr = element.getAttribute('data-event')
@@ -252,12 +286,12 @@ class Component {
         }
     }
 
-    magic(value, self, actions, loop, event) {
-        let [f, args] = this.parse(value, self, actions, loop, event)
+    callAction(value, self, actions, loop, event, events) {
+        let [f, args] = this.parseAction(value, self, actions, loop, event, events)
         this.call(f, self, args)
     }
 
-    parse(value, self, actions, loop, event) {
+    parseAction(value, self, actions, loop, event, events) {
         let [_, func, params] = value.match(/^([A-z\.]+)\((.*)\)$/)
         params = params.split(',').filter(v => v !== '').map(v => eval(v))
         return [eval(func), params]
@@ -280,6 +314,7 @@ class Component {
     _parseData(self, text) {
         let loop = this.loop
         let actions = this.actions
+        let events = this.events
         let res = {}
         for (let [_, t] of text.matchAll(/{{([^}]+)}}/g)) {
             let v = eval(t)
