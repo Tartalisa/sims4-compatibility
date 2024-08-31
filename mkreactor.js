@@ -1,7 +1,7 @@
 const COMPONENTS = {}
 
 const registerComponent = (templateName, component) => {
-    COMPONENTS[templateName] = component
+    COMPONENTS[templateName.toUpperCase()] = component
 }
 
 String.prototype.hashCode = function () {
@@ -14,6 +14,12 @@ String.prototype.hashCode = function () {
     }
     return hash;
 }
+
+const RenderState = Object.freeze({
+    READY: Symbol('READY'),
+    SUSPEND: Symbol('SUSPEND'),
+    PROCESSING: Symbol('PROCESSING'),
+})
 
 const _validator = (parent) => {
     return {
@@ -30,38 +36,15 @@ const _validator = (parent) => {
         set(target, key, value) {
             if (target[key] === value) return true
             target[key] = value
-            console.log(parent.name, key, value, parent.timeoutID)
             parent.triggerRender()
             return true
         }
     }
 }
 
-const printElement = (element) => {
-    if ((element === null) || (typeof element === 'undefined')) {
-        return '$'
-    }
-    let res = printElement(element.parentElement)
-
-    return res + ">" + formatElement(element)
-}
-
-
-const formatElement = (element) => {
-    if (element instanceof Text) {
-        return `@TEXT(${element.textContent})`
-    }
-    let res = element.tagName
-    if (element.hasAttribute('id')) res = res + `#${element.getAttribute('id')}`
-    element.classList.forEach(v=> {
-        res = res + `.${v}`
-    })
-    return res
-}
-
 class Component {
-    constructor(config, name='MAIN') {
-        this.name = name
+    constructor(config, name = 'main') {
+        this.name = name.toUpperCase()
         this.timeoutID = 0
         this.data_r = config.data
         this.data = new Proxy(config.data, _validator(this))
@@ -69,31 +52,48 @@ class Component {
         this.events = config.events ?? {}
         this.conditionOk = true
         this.loop = {}
-        this.template = config.template
+        this.template = config.template ?? document.querySelector(`script#${this.name.toLowerCase()}-template`).textContent.trim()
         this.root = config.root
+        this.tmp_root = null
         this.children = {}
         this.usedInLastRender = new Set()
-        this.render()
+        this._renderState = RenderState.READY
     }
 
     triggerRender() {
         if (this.timeoutID) {
-            return
+            clearTimeout(this.timeoutID)
         }
-        this.timeoutID = setTimeout(() => this.render(), 25)
+        this.timeoutID = setTimeout(() => this.render(), 10)
+    }
+
+    suspendRender() {
+        this._renderState = RenderState.SUSPEND
+    }
+
+    releaseRender() {
+        this._renderState = RenderState.READY
     }
 
     render() {
-        this.usedInLastRender.clear()
-        const virtualElement = document.createElement('div')
-        virtualElement.innerHTML = this.template
-        this._traverse(this.data, virtualElement.firstChild, '0')
-        this.mergeChildren(this.root, virtualElement)
-        let badChildrenComponents = (new Set(Object.keys(this.children))).difference(this.usedInLastRender)
-        for (let key of badChildrenComponents) {
-            delete this.children[key]
+        if (RenderState.READY !== this._renderState) return
+        this._renderState = RenderState.PROCESSING
+        try {
+            const virtualElement = document.createElement('div')
+            virtualElement.innerHTML = this.template
+            this._traverse(this.data, virtualElement.firstChild, '0')
+            this.mergeChildren(this.root, virtualElement)
+            for (let key of (new Set(Object.keys(this.children))).difference(this.usedInLastRender)) {
+                delete this.children[key]
+            }
+        } finally {
+            this.usedInLastRender.forEach(v => {
+                this.children[v].root = this.children[v].tmp_root
+            })
+            this.usedInLastRender.clear()
+            this.releaseRender()
+            this.timeoutID = 0
         }
-        this.timeoutID = 0
     }
 
     mergeChildren(root, virtualElement) {
@@ -174,19 +174,22 @@ class Component {
         }
         if (this.children.hasOwnProperty(number)) {
             cmp = this.children[number]
-            // cmp.root = document.createElement('div')
-            cmp.timeoutID = -1
+            cmp.suspendRender()
+            cmp.tmp_root = cmp.root
+            cmp.root = document.createElement('div')
             Object.assign(cmp.data, extraData)
             cmp.events = events
-            cmp.render()
+            cmp.releaseRender()
         } else {
             let config = COMPONENTS[element.tagName]()
             Object.assign(config.data, extraData)
             config.events = events
             config.root = document.createElement('div')
             cmp = new Component(config, element.tagName)
+            cmp.tmp_root = cmp.root
             this.children[number] = cmp
         }
+        cmp.render()
         this.usedInLastRender.add(number)
         return cmp.root
     }
@@ -231,7 +234,7 @@ class Component {
                 element.removeAttribute(attr.name)
             } else if (attr.name === '@for') {
                 let v = eval(attr.value)
-                const e = element.firstChild
+                const e = element.firstElementChild
                 if (element.hasAttribute('@hold')) {
                     element.removeChild(e)
                     element.removeAttribute('@hold')

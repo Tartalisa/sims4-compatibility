@@ -11,6 +11,64 @@
             font-family: sans-serif;
         }
 
+        .side-menu {
+            width: 25%;
+        }
+
+        div.traits {
+            font-size: 0.8em;
+        }
+
+        div.traits > div:hover:not(.yellow) {
+            background-color: #fffadc;
+        }
+
+        #partner-traits {
+            width: 33%;
+        }
+
+        #compatibility-results {
+            width: 50%;
+            text-align: center;
+        }
+
+        main {
+            width: 75%;
+        }
+
+        #compatibility, .flex-common {
+            display: flex;
+            flex-flow: row wrap;
+            align-items: stretch;
+            justify-content: space-evenly;
+            gap: 4px;
+        }
+
+        .flex-common > div {
+            border: gray 1px solid;
+            cursor: pointer;
+        }
+
+        .traits.flex-common > div, .flex-common:not(.traits) > div > div {
+            padding: 2px 8px;
+        }
+
+        .gray {
+            background-color: lightgray;
+        }
+
+        .green {
+            background-color: #8dbf7b;
+        }
+
+        .red {
+            background-color: #dd8585;
+        }
+
+        .yellow {
+            background-color: #ffef96;
+        }
+
         table#history {
             border-collapse: collapse;
             border: 1px solid black;
@@ -33,91 +91,16 @@
             background-color: #ececec;
         }
 
-        table tbody tr td:nth-child(2), table tbody tr td:nth-child(4) {
-            text-align: left;
-        }
-
-        table tbody tr td:nth-child(1), table tbody tr td:nth-child(3), table tbody tr td:nth-child(6) {
-            text-align: right;
-        }
-
-        .side-menu {
-            width: 25%;
-        }
-
-        #selected-traits, #partner-traits {
-            font-size: 0.8em;
-        }
-
-        #selected-traits > div:hover:not(.yellow), #partner-traits > div:hover:not(.yellow) {
-            background-color: #fffadc;
-        }
-
-        #partner-traits {
-            width: 33%;
-        }
-
-        #compatibility-results {
-            width: 50%;
-            text-align: center;
-        }
-
-        main {
-            width: 75%;
-        }
-
-        #result, #random, #selected-traits, #partner-traits, #compatibility > div {
-            display: flex;
-            flex-flow: row wrap;
-            align-items: flex-start;
-            justify-content: space-evenly;
-            gap: 4px;
-        }
-
-        #result > div, #random > div, #selected-traits > div, #partner-traits > div {
-            /*padding: 4px;*/
-            border: gray 1px solid;
-            cursor: pointer;
-        }
-
-        #result div, #random div, #selected-traits div, #partner-traits div {
-            padding: 2px 8px;
-        }
-
-        .gray {
-            background-color: lightgray;
-        }
-
-        .green {
-            background-color: #8dbf7b;
-        }
-
-        .red {
-            background-color: #dd8585;
-        }
-
         .close-button:hover {
             cursor: pointer;
             color: #dd8585;
         }
 
-        .yellow {
-            background-color: #ffef96;
-        }
-
-        .tab-header {
-            display: flex;
-            flex-flow: row wrap;
-            align-items: flex-start;
-            justify-content: space-evenly;
-            gap: 4px;
-        }
-
-        .tab-name {
+        .tab-header > .tab-name {
             background-color: #eaeaea;
         }
 
-        .tab-name.selected {
+        .tab-header > .tab-name.selected {
             background-color: #adadad;
         }
 
@@ -128,7 +111,6 @@
         .tab-body > .tab.selected {
             display: block;
         }
-
     </style>
 </head>
 <body>
@@ -4617,11 +4599,7 @@
         }
     }
 
-    let DATA = {}
-
-    const loadData = () => {
-        return JSON.parse(document.querySelector('#data').textContent)
-    }
+    const loadData = () => JSON.parse(document.querySelector('#data').textContent)
 
     const calcCompatibilityByTrait = (compatibility, traitsSet, otherTraitsSet) => {
         if (!otherTraitsSet.has(compatibility.value)) return 0
@@ -4644,15 +4622,9 @@
         return 'gray'
     }
 
-    const setData = (info) => {
-        main.data.info = Info.fromJSON(info.toJSON())
-    }
-
-    let main
-
-    const init = () => {
-        DATA = loadData()
-        registerComponent('CATEGORIES', () => {
+    document.addEventListener('DOMContentLoaded', () => {
+        window.DATA = loadData()
+        registerComponent('categories', () => {
             return {
                 data: {
                     categories: []
@@ -4660,25 +4632,15 @@
                 actions: {
                     calcClassName: function (categoryValue) {
                         let sum = categoryValue['map'].reduce((p, c) => {
-                            if (this.traits.has(c.trait)) {
-                                p += c.weight
-                            }
+                            if (this.traits.has(c.trait)) p += c.weight
                             return p
                         }, 0)
                         return getClass(sum)
                     }
-                },
-                template: '<div @for="self.categories">' +
-                    '<div>' +
-                    '<p><b>{{loop.item.name}}</b></p>' +
-                    '<div @for="loop.item.values">' +
-                    '<div :class="{{actions.calcClassName.call(self, loop.item)}}">{{loop.item.value}}</div>' +
-                    '</div>' +
-                    '</div>' +
-                    '</div>'
+                }
             }
         })
-        registerComponent('RANDOMS', () => {
+        registerComponent('randoms', () => {
             return {
                 data: {
                     randoms: []
@@ -4692,35 +4654,24 @@
                         let i = Math.floor(Math.random() * category.values.length)
                         return category.values[i]
                     }
-                },
-                template: '<div @for="self.randoms">' +
-                    '<div>' +
-                    '<p><b>{{loop.item.category}}</b></p>' +
-                    '<div :class="{{actions.calcClassName.call(self)}}">{{actions.getValue.call(self, loop.item)}}' +
-                    '</div>' +
-                    '</div>' +
-                    '</div>'
+                }
             }
         })
-        registerComponent('TRAITS', () => {
+        registerComponent('traits', () => {
             return {
                 data: {
                     selectedtraits: new Set(),
                 },
                 events: {
-                    updatetrait: (trait) => {}
-                },
-                template: '<div @for="DATA.traits">' +
-                    '<div @on:click="events.updatetrait(loop.item)" ' +
-                    ':class="{{self.selectedtraits.has(loop.item) ? \'yellow\' : \'\'}}"><span>{{loop.item}}</span></div>' +
-                    '</div>'
+                    updatetrait: (trait) => null
+                }
             }
         })
-        registerComponent('COMPARISON', () => {
+        registerComponent('comparison', () => {
             return {
                 data: {
                     info: {},
-                    history: JSON.parse(localStorage.getItem('HISTORY') || '[]').map(v => Info.fromJSON(v))
+                    history: JSON.parse(localStorage.getItem('HISTORY') || '[]')
                 },
                 actions: {
                     clearHistory: function () {
@@ -4734,164 +4685,201 @@
                         this.info.partner = newValue
                     },
                     addToHistory: function () {
-                        this.history.push(Info.fromJSON(this.info.toJSON()))
+                        this.history.push(this.info.toJSON())
                         localStorage.setItem('HISTORY', JSON.stringify(this.history))
                     },
                     removeHistoryData: function (idx) {
                         this.history.splice(idx, 1)
                         localStorage.setItem('HISTORY', JSON.stringify(this.history))
                     },
-                    setHistoryData: function (data) {
-                        setData(data)
+                    setHistoryData: function (events, info) {
+                        events.setinfo(Info.fromJSON(info))
                     },
                 },
-                template: '<div>' +
-                    '<p><input :value="{{self.info.person}}" @on:input="actions.setPersonName(event.target.value)">' +
-                    ' &#8594; <span>{{self.info.personScore}}</span> &#8594; ' +
-                    '<input :value="{{self.info.partner}}" @on:input="actions.setPartnerName(event.target.value)"></p>' +
-                    '<p><span>{{self.info.person}}</span>' +
-                    ' &#8592; <span>{{self.info.partnerScore}}</span> &#8592; ' +
-                    '<span>{{self.info.partner}}</span></p>' +
-                    '<p>Совместимость: <span>{{self.info.compatibilityScore}}</span></p>' +
-                    '<div>' +
-                    '<button @on:click="actions.addToHistory()">Сохранить</button>' +
-                    '<button @on:click="actions.clearHistory()">Очистить таблицу</button>' +
-                    '</div>' +
-                    '<br>' +
-                    '<table id="history" style="width: 100%">' +
-                    '<thead>' +
-                    '<tr><td colspan="2">Персонаж</td><td colspan="2">Партнер</td>' +
-                    '<td rowspan="2" colspan="2" style="width: 10%">Совместимость</td></tr>' +
-                    '<tr><td>Имя</td><td>Баллы</td><td>Имя</td><td>Баллы</td></tr>' +
-                    '</thead>' +
-                    '<tbody @for="self.history" @hold>' +
-                    '<tr @on:dblclick="actions.setHistoryData(loop.item)">' +
-                    '<td>{{loop.item.person}}</td>' +
-                    '<td>{{loop.item.personScore}}</td>' +
-                    '<td>{{loop.item.partner}}</td>' +
-                    '<td>{{loop.item.partnerScore}}</td>' +
-                    '<td>{{loop.item.compatibilityScore}}</td>' +
-                    '<td><span @on:click="actions.removeHistoryData(loop.index)" class="close-button">&#10799;</span></td>' +
-                    '</tr>' +
-                    '</tbody>' +
-                    '</table>' +
-                    '</div>'
+                events: {
+                    setinfo: (info) => null
+                }
             }
         })
-        registerComponent('CATEGORIES-TAB', () => {
-            return {
-                data: {
-                    info: {}
-                },
-                template: '<div>' +
-                    '<categories id="result" :traits="{{self.info.personTraits}}" :categories="{{DATA.categories}}"></categories>' +
-                    '<randoms id="random" :randoms="{{DATA.randoms}}"></randoms>' +
-                    '</div>'
-            }
+        registerComponent('categories-tab', () => {
+            return {data: {info: {}}}
         })
-        registerComponent('COMPARISON-TAB', () => {
-            return {
-                data: {
-                    info: {}
-                },
-                template: '<div>' +
-                    '<comparison id="compatibility-results" :info="{{self.info}}"></comparison>' +
-                    '<traits id="partner-traits" :selectedtraits="{{self.info.partnerTraits}}" @on:updatetrait="{{events.updatetrait}}"></traits>' +
-                    '</div>'
-            }
+        registerComponent('comparison-tab', () => {
+            return {data: {info: {}}}
         })
-        registerComponent('TABS', () => {
+        registerComponent('tabs', () => {
             return {
                 data: {
                     info: {},
-                    selectedTab: 'categories'
+                    selectedTab: localStorage.getItem('tabName') || 'categories'
                 },
                 actions: {
-                    setTab: function(tab) {
-                        console.log('setTab', tab)
+                    setTab: function (tab) {
+                        localStorage.setItem('tabName', tab)
                         this.selectedTab = tab
+                    },
+                    tabSelectionMode: function (tab) {
+                        return (this.selectedTab === tab) ? 'selected' : ''
+
                     }
                 },
                 events: {
-                    clearpartnertraits: () => {}
-                },
-                template: '<div>' +
-                    '<div class="tab-header">' +
-                    '   <h2 @on:click="actions.setTab(\'categories\')" :class="tab-name {{self.selectedTab === \'categories\' ? \'selected\': \'\'}}">Категории и предпочтения</h2>' +
-                    '   <h2 @on:click="actions.setTab(\'compatibility\')" :class="tab-name {{self.selectedTab === \'compatibility\' ? \'selected\': \'\'}}">' +
-                    '       Совместимость <button @on:click="events.clearpartnertraits()">Очистить ЧХ</button>' +
-                    '   </h2>' +
-                    '</div>' +
-                    '<div class="tab-body">' +
-                    '<div :class="tab {{self.selectedTab === \'categories\' ? \'selected\': \'\'}}">' +
-                    '<categories-tab :info="{{self.info}}" id="results"></categories-tab>' +
-                    '</div>' +
-                    '<div :class="tab {{self.selectedTab === \'compatibility\' ? \'selected\': \'\'}}">' +
-                    '<comparison-tab :info="{{self.info}}" @on:updatetrait="{{events.updatetrait}}" id="compatibility"></comparison-tab>' +
-                    '</div>' +
-                    '</div>' +
-                    '</div></div>'
-
+                    clearpartnertraits: () => null
+                }
             }
         })
-        main = new Component({
+        let main = new Component({
             root: document.querySelector('#main'),
             data: {
                 info: new Info(),
             },
             actions: {
-                clearTraits: function() {
+                setInfo: function (info) {
+                    this.info = info
+                },
+                clearTraits: function (actions) {
                     this.info.personTraits.clear()
+                    actions.clearPartnerTraits.call(this)
+                },
+                clearPartnerTraits: function () {
                     this.info.partnerTraits.clear()
                     this.info.personScore = 0
                     this.info.partnerScore = 0
                     this.info.compatibilityScore = 0
                 },
-                clearPartnerTraits: function() {
-                    this.info.partnerTraits.clear()
-                    this.info.personScore = 0
-                    this.info.partnerScore = 0
-                    this.info.compatibilityScore = 0
-                },
-                updatePersonTraits: function(trait) {
-                    if (this.info.personTraits.has(trait)) this.info.personTraits.delete(trait)
-                    else this.info.personTraits.add(trait)
-                    this.info.personScore = 0
-                    this.info.partnerScore = 0
-                    for (let compatibility of DATA.compatibility) {
-                        this.info.personScore += calcCompatibilityByTrait(compatibility, this.info.partnerTraits, this.info.personTraits)
-                        this.info.partnerScore += calcCompatibilityByTrait(compatibility, this.info.personTraits, this.info.partnerTraits)
+                toggleTrait: function (traitSetName) {
+                    return function (trait) {
+                        if (this.info[traitSetName].has(trait)) this.info[traitSetName].delete(trait)
+                        else this.info[traitSetName].add(trait)
+                        this.info.personScore = 0
+                        this.info.partnerScore = 0
+                        for (let compatibility of DATA.compatibility) {
+                            this.info.personScore += calcCompatibilityByTrait(compatibility, this.info.partnerTraits, this.info.personTraits)
+                            this.info.partnerScore += calcCompatibilityByTrait(compatibility, this.info.personTraits, this.info.partnerTraits)
+                        }
+                        this.info.compatibilityScore = calcCompatibilityScore(this.info.personScore, this.info.partnerScore)
                     }
-                    this.info.compatibilityScore = calcCompatibilityScore(this.info.personScore, this.info.partnerScore)
-                },
-                updatePartnerTraits: function(trait) {
-                    if (this.info.partnerTraits.has(trait)) this.info.partnerTraits.delete(trait)
-                    else this.info.partnerTraits.add(trait)
-                    this.info.personScore = 0
-                    this.info.partnerScore = 0
-                    for (let compatibility of DATA.compatibility) {
-                        this.info.personScore += calcCompatibilityByTrait(compatibility, this.info.partnerTraits, this.info.personTraits)
-                        this.info.partnerScore += calcCompatibilityByTrait(compatibility, this.info.personTraits, this.info.partnerTraits)
-                    }
-                    this.info.compatibilityScore = calcCompatibilityScore(this.info.personScore, this.info.partnerScore)
                 }
             },
-            template: '<div>' +
-                '<div class="side-menu">' +
-                '<h2>Черты характера <button @on:click="actions.clearTraits()">Очистить все</button></h2>' +
-                '<traits :selectedtraits="{{self.info.personTraits}}" @on:updatetrait="{{actions.updatePersonTraits}}" id="selected-traits"></traits>' +
-                '</div>' +
-                '<main><tabs ' +
-                ':info="{{self.info}}" ' +
-                '@on:updatetrait="{{actions.updatePartnerTraits}}" ' +
-                '@on:clearpartnertraits="{{actions.clearPartnerTraits}}" ' +
-                'class="tab-container"' +
-                '></tabs></main>' +
-                '</div>'
         })
-    }
-
-    document.addEventListener('DOMContentLoaded', init)
+        main.render()
+    })
+</script>
+<script type="text/html" id="categories-template">
+    <div @for="self.categories">
+        <div>
+            <div style="text-align: center"><p><b>{{loop.item.name}}</b></p></div>
+            <div @for="loop.item.values">
+                <div :class="{{actions.calcClassName.call(self, loop.item)}}">{{loop.item.value}}</div>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/html" id="randoms-template">
+    <div @for="self.randoms">
+        <div>
+            <div style="text-align: center"><p><b>{{loop.item.category}}</b></p></div>
+            <div :class="{{actions.calcClassName.call(self)}}">{{actions.getValue.call(self, loop.item)}}</div>
+        </div>
+    </div>
+</script>
+<script type="text/html" id="traits-template">
+    <div @for="DATA.traits">
+        <div @on:click="events.updatetrait(loop.item)" :class="{{self.selectedtraits.has(loop.item) ? 'yellow' : ''}}">
+            <span>{{loop.item}}</span>
+        </div>
+    </div>
+</script>
+<script type="text/html" id="comparison-template">
+    <div>
+        <p><input :value="{{self.info.person}}" @on:input="actions.setPersonName(event.target.value)">
+            &#8594; {{self.info.personScore}} &#8594;
+            <input :value="{{self.info.partner}}" @on:input="actions.setPartnerName(event.target.value)"></p>
+        <p>{{self.info.person}} &#8592; {{self.info.partnerScore}} &#8592; {{self.info.partner}}</p>
+        <p>Совместимость: {{self.info.compatibilityScore}}</p>
+        <div>
+            <button @on:click="actions.addToHistory()">Сохранить</button>
+            <button @on:click="actions.clearHistory()">Очистить таблицу</button>
+        </div>
+        <br>
+        <table id="history" style="width: 100%">
+            <thead>
+            <tr>
+                <td colspan="2">Персонаж</td>
+                <td colspan="2">Партнер</td>
+                <td rowspan="2" colspan="2" style="width: 10%">Совместимость</td>
+            </tr>
+            <tr>
+                <td>Имя</td>
+                <td>Баллы</td>
+                <td>Имя</td>
+                <td>Баллы</td>
+            </tr>
+            </thead>
+            <tbody @for="self.history" @hold>
+            <tr @on:dblclick="actions.setHistoryData(events, loop.item)">
+                <td style="text-align: right">{{loop.item.person}}</td>
+                <td style="text-align: left">{{loop.item.personScore}}</td>
+                <td style="text-align: right">{{loop.item.partner}}</td>
+                <td style="text-align: left">{{loop.item.partnerScore}}</td>
+                <td>{{loop.item.compatibilityScore}}</td>
+                <td><span @on:click="actions.removeHistoryData(loop.index)" class="close-button">&#10799;</span></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</script>
+<script type="text/html" id="categories-tab-template">
+    <div>
+        <categories class="flex-common" :traits="{{self.info.personTraits}}"
+                    :categories="{{DATA.categories}}"></categories>
+        <br>
+        <randoms class="flex-common" :randoms="{{DATA.randoms}}"></randoms>
+    </div>
+</script>
+<script type="text/html" id="comparison-tab-template">
+    <div id="compatibility">
+        <comparison id="compatibility-results" :info="{{self.info}}" @on:setinfo="{{events.setinfo}}"></comparison>
+        <traits id="partner-traits" class="traits flex-common" :selectedtraits="{{self.info.partnerTraits}}"
+                @on:updatetrait="{{events.updatetrait}}"></traits>
+    </div>
+</script>
+<script type="text/html" id="tabs-template">
+    <div>
+        <div class="tab-header flex-common">
+            <h2 :class="tab-name {{actions.tabSelectionMode.call(self, 'categories')}}"
+                @on:click="actions.setTab('categories')">Категории и предпочтения</h2>
+            <h2 :class="tab-name {{actions.tabSelectionMode.call(self, 'compatibility')}}"
+                @on:click="actions.setTab('compatibility')">
+                Совместимость
+                <button @on:click="events.clearpartnertraits()">Очистить ЧХ</button>
+            </h2>
+        </div>
+        <div class="tab-body">
+            <div :class="tab {{actions.tabSelectionMode.call(self, 'categories')}}">
+                <categories-tab :info="{{self.info}}" id="results"></categories-tab>
+            </div>
+            <div :class="tab {{actions.tabSelectionMode.call(self, 'compatibility')}}">
+                <comparison-tab :info="{{self.info}}" @on:setinfo="{{events.setinfo}}"
+                                @on:updatetrait="{{events.updatetrait}}"></comparison-tab>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/html" id="main-template">
+    <div>
+        <div class="side-menu">
+            <h2>Черты характера
+                <button @on:click="actions.clearTraits(actions)">Очистить все</button>
+            </h2>
+            <traits id="selected-traits" class="traits flex-common" :selectedtraits="{{self.info.personTraits}}"
+                    @on:updatetrait="{{actions.toggleTrait('personTraits')}}"></traits>
+        </div>
+        <main>
+            <tabs class="tab-container" :info="{{self.info}}" @on:clearpartnertraits="{{actions.clearPartnerTraits}}"
+                  @on:setinfo="{{actions.setInfo}}" @on:updatetrait="{{actions.toggleTrait('partnerTraits')}}"></tabs>
+        </main>
+    </div>
 </script>
 <div id="main"></div>
 </body>
