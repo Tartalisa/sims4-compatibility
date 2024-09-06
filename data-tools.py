@@ -26,6 +26,16 @@ def parse(data):
     items = defaultdict(list)
     for line in data:
         trait, val, weight = line.split('\t')
+        items[val].append(
+            MapItem(trait, int(weight))
+        )
+    return format_result(items)
+
+
+def parse_t2t(data):
+    items = defaultdict(list)
+    for line in data:
+        trait, val, weight = line.split('\t')
         items[trait].append(
             MapItem(val, int(weight))
         )
@@ -53,6 +63,8 @@ def main():
             print(*normalize(sys.stdin), sep='')
         case _, '--parse' | '-p':
             print(parse(sys.stdin))
+        case _, '--t2t' | '-t':
+            print(parse_t2t(sys.stdin))
         case _:
             raise Exception('only normalize (-n | --normalize) or parse (-p | --parse) are available')
 

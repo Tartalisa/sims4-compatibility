@@ -167,7 +167,7 @@
     const calcCompatibilityScore = (personScore, partnerScore) => {
         let avg = (personScore + partnerScore) / 2
         let D = Math.abs(personScore - partnerScore)
-        let top = 10
+        let top = 6
         let baseScore = (avg - D * 0.32) * 100 / top
         let person2partnerPenalty = Math.min(Math.sign(personScore), 0) * top
         let partner2personPenalty = Math.min(Math.sign(partnerScore), 0) * top
