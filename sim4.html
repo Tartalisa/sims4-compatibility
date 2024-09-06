@@ -115,6 +115,7 @@
 </head>
 <body>
 <script src="mkreactor.js"></script>
+<script src="data.js"></script>
 <script>
     class Info {
         constructor() {
@@ -150,13 +151,6 @@
                 'partnerTraits': Array.from(this.partnerTraits),
             }
         }
-    }
-
-    const loadData = () => {
-        let xhr = new XMLHttpRequest()
-        xhr.open('GET', './data.json', false)
-        xhr.send()
-        return JSON.parse(xhr.response)
     }
 
     const calcCompatibilityByTrait = (compatibility, traitsSet, otherTraitsSet) => {
