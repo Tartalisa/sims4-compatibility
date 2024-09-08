@@ -235,11 +235,20 @@ class Component {
             } else if (attr.name === '@for') {
                 let v = eval(attr.value)
                 const e = element.firstElementChild
+                let insertMethod
                 if (element.hasAttribute('@hold')) {
                     element.removeChild(e)
                     element.removeAttribute('@hold')
+                    insertMethod = (e) => element.appendChild(e)
                 } else {
                     let parent = element.parentNode
+                    if (element.nextSibling) {
+                        let sibl = element.nextSibling
+                        insertMethod = (e) => parent.insertBefore(e, sibl)
+                    }
+                    else {
+                        insertMethod = (e) => parent.appendChild(e)
+                    }
                     parent.removeChild(element)
                     element = parent
                 }
@@ -253,7 +262,7 @@ class Component {
                     this.loop.index = i
                     let el = e.cloneNode(true)
                     this._traverse(self, el, number)
-                    element.appendChild(el)
+                    insertMethod(el)
                 }
                 this.loop = this.loop.parent
                 processChildren = false
