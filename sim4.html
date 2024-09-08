@@ -121,9 +121,17 @@
         constructor() {
             this.person = 'Персонаж'
             this.partner = 'Партнер'
-            this.personScore = 0
-            this.partnerScore = 0
-            this.compatibilityScore = 0
+            this.compatibility = {
+                scores: DATA.compatibilities.map(compatibility => {
+                    return {
+                        name: compatibility.name,
+                        personScore: 0,
+                        partnerScore: 0,
+                        compatibilityScore: 0
+                    }
+                }),
+                total: 0
+            }
             this.personTraits = new Set()
             this.partnerTraits = new Set()
         }
@@ -132,9 +140,7 @@
             let info = new Info()
             info.person = json['person']
             info.partner = json['partner']
-            info.personScore = json['personScore']
-            info.partnerScore = json['partnerScore']
-            info.compatibilityScore = json['compatibilityScore']
+            info.compatibility = json['compatibility']
             info.personTraits = new Set(json['personTraits'])
             info.partnerTraits = new Set(json['partnerTraits'])
             return info
@@ -144,9 +150,7 @@
             return {
                 'person': this.person,
                 'partner': this.partner,
-                'personScore': this.personScore,
-                'partnerScore': this.partnerScore,
-                'compatibilityScore': this.compatibilityScore,
+                'compatibility': this.compatibility,
                 'personTraits': Array.from(this.personTraits),
                 'partnerTraits': Array.from(this.partnerTraits),
             }
@@ -247,6 +251,9 @@
                     setHistoryData: function (events, info) {
                         events.setinfo(Info.fromJSON(info))
                     },
+                    getDetails: function (currCompatibility) {
+                        return currCompatibility.scores.map(v => `${v.compatibilityScore} (${v.name})`).join('\n')
+                    }
                 },
                 events: {
                     setinfo: (info) => null
@@ -280,7 +287,7 @@
                 }
             }
         })
-        let main = new Component({
+        window.main = new Component({
             root: document.querySelector('#main'),
             data: {
                 info: new Info(),
@@ -295,21 +302,36 @@
                 },
                 clearPartnerTraits: function () {
                     this.info.partnerTraits.clear()
-                    this.info.personScore = 0
-                    this.info.partnerScore = 0
-                    this.info.compatibilityScore = 0
+                    this.info.compatibility.scores = DATA.compatibilities.map(compatibility => {
+                        return {
+                            name: compatibility.name,
+                            personScore: 0,
+                            partnerScore: 0,
+                            compatibilityScore: 0
+                        }
+                    })
+                    this.info.compatibility.total = 0
                 },
                 toggleTrait: function (traitSetName) {
                     return function (trait) {
                         if (this.info[traitSetName].has(trait)) this.info[traitSetName].delete(trait)
                         else this.info[traitSetName].add(trait)
-                        this.info.personScore = 0
-                        this.info.partnerScore = 0
-                        for (let compatibility of DATA.compatibility) {
-                            this.info.personScore += calcCompatibilityByTrait(compatibility, this.info.partnerTraits, this.info.personTraits)
-                            this.info.partnerScore += calcCompatibilityByTrait(compatibility, this.info.personTraits, this.info.partnerTraits)
-                        }
-                        this.info.compatibilityScore = calcCompatibilityScore(this.info.personScore, this.info.partnerScore)
+                        this.info.compatibility.total = 0
+                        this.info.compatibility.scores = DATA.compatibilities.map(compatibility => {
+                            let comp = {
+                                name: compatibility.name,
+                                personScore: 0,
+                                partnerScore: 0,
+                                compatibilityScore: 0
+                            }
+                            for (let compatibilityTrait of compatibility.values) {
+                                comp.personScore += calcCompatibilityByTrait(compatibilityTrait, this.info.partnerTraits, this.info.personTraits)
+                                comp.partnerScore += calcCompatibilityByTrait(compatibilityTrait, this.info.personTraits, this.info.partnerTraits)
+                            }
+                            comp.compatibilityScore = calcCompatibilityScore(comp.personScore, comp.partnerScore)
+                            this.info.compatibility.total += comp.compatibilityScore
+                            return comp
+                        })
                     }
                 }
             },
@@ -344,11 +366,27 @@
 </script>
 <script type="text/html" id="comparison-template">
     <div>
-        <p><input :value="{{self.info.person}}" @on:input="actions.setPersonName(event.target.value)">
-            &#8594; {{self.info.personScore}} &#8594;
-            <input :value="{{self.info.partner}}" @on:input="actions.setPartnerName(event.target.value)"></p>
-        <p>{{self.info.person}} &#8592; {{self.info.partnerScore}} &#8592; {{self.info.partner}}</p>
-        <p>Совместимость: {{self.info.compatibilityScore}}</p>
+        <table>
+            <thead>
+            <tr>
+                <th>Категория совместимости</th>
+                <th><input :value="{{self.info.person}}" @on:input="actions.setPersonName(event.target.value)"></th>
+                <th><input :value="{{self.info.partner}}" @on:input="actions.setPartnerName(event.target.value)"></th>
+            </tr>
+            </thead>
+            <tbody @for="self.info.compatibility.scores">
+            <tr>
+                <th>{{loop.item.name}} ({{loop.item.compatibilityScore}})</th>
+                <td>{{loop.item.personScore}}</td>
+                <td>{{loop.item.partnerScore}}</td>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr>
+                <td colspan="3"><b>Общая совместимость:</b> {{self.info.compatibility.total}}</td>
+            </tr>
+            </tfoot>
+        </table>
         <div>
             <button @on:click="actions.addToHistory()">Сохранить</button>
             <button @on:click="actions.clearHistory()">Очистить таблицу</button>
@@ -357,24 +395,18 @@
         <table id="history" style="width: 100%">
             <thead>
             <tr>
-                <td colspan="2">Персонаж</td>
-                <td colspan="2">Партнер</td>
-                <td rowspan="2" colspan="2" style="width: 10%">Совместимость</td>
-            </tr>
-            <tr>
-                <td>Имя</td>
-                <td>Баллы</td>
-                <td>Имя</td>
-                <td>Баллы</td>
+                <td>Персонаж</td>
+                <td>Партнер</td>
+                <td colspan="2" style="width: 40%">Совместимость</td>
             </tr>
             </thead>
             <tbody @for="self.history" @hold>
             <tr @on:dblclick="actions.setHistoryData(events, loop.item)">
-                <td style="text-align: right">{{loop.item.person}}</td>
-                <td style="text-align: left">{{loop.item.personScore}}</td>
-                <td style="text-align: right">{{loop.item.partner}}</td>
-                <td style="text-align: left">{{loop.item.partnerScore}}</td>
-                <td>{{loop.item.compatibilityScore}}</td>
+                <td>{{loop.item.person}}</td>
+                <td>{{loop.item.partner}}</td>
+                <td><div @for="loop.item.compatibility.scores">
+                    <div>{{loop.item.compatibilityScore}} ({{loop.item.name}})</div>
+                </div><div>{{loop.item.compatibility.total}} (Всего)</div></td>
                 <td><span @on:click="actions.removeHistoryData(loop.index)" class="close-button">&#10799;</span></td>
             </tr>
             </tbody>
