@@ -150,7 +150,7 @@
             return {
                 'person': this.person,
                 'partner': this.partner,
-                'compatibility': this.compatibility,
+                'compatibility': Object.assign({}, this.compatibility),
                 'personTraits': Array.from(this.personTraits),
                 'partnerTraits': Array.from(this.partnerTraits),
             }
@@ -294,7 +294,7 @@
             },
             actions: {
                 setInfo: function (info) {
-                    this.info = info
+                    this.info = Info.fromJSON(info.toJSON())
                 },
                 clearTraits: function (actions) {
                     this.info.personTraits.clear()
@@ -328,8 +328,8 @@
                                 comp.personScore += calcCompatibilityByTrait(compatibilityTrait, this.info.partnerTraits, this.info.personTraits)
                                 comp.partnerScore += calcCompatibilityByTrait(compatibilityTrait, this.info.personTraits, this.info.partnerTraits)
                             }
-                            comp.compatibilityScore = calcCompatibilityScore(comp.personScore, comp.partnerScore)
-                            this.info.compatibility.total += comp.compatibilityScore
+                            comp.compatibilityScore = parseInt(calcCompatibilityScore(comp.personScore, comp.partnerScore) * 10) / 10
+                            this.info.compatibility.total = (this.info.compatibility.total * 10 + comp.compatibilityScore * 10) / 10
                             return comp
                         })
                     }
@@ -404,9 +404,12 @@
             <tr @on:dblclick="actions.setHistoryData(events, loop.item)">
                 <td>{{loop.item.person}}</td>
                 <td>{{loop.item.partner}}</td>
-                <td><div @for="loop.item.compatibility.scores">
-                    <div>{{loop.item.compatibilityScore}} ({{loop.item.name}})</div>
-                </div><div>{{loop.item.compatibility.total}} (Всего)</div></td>
+                <td>
+                    <div @for="loop.item.compatibility.scores">
+                        <div>{{loop.item.compatibilityScore}} ({{loop.item.name}})</div>
+                    </div>
+                    <div>{{loop.item.compatibility.total}} (Всего)</div>
+                </td>
                 <td><span @on:click="actions.removeHistoryData(loop.index)" class="close-button">&#10799;</span></td>
             </tr>
             </tbody>
