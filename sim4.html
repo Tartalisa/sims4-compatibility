@@ -329,9 +329,12 @@
                                 comp.partnerScore += calcCompatibilityByTrait(compatibilityTrait, this.info.personTraits, this.info.partnerTraits)
                             }
                             comp.compatibilityScore = parseInt(calcCompatibilityScore(comp.personScore, comp.partnerScore) * 10) / 10
-                            this.info.compatibility.total = (this.info.compatibility.total * 10 + comp.compatibilityScore * 10) / 10
+                            this.info.compatibility.total += comp.compatibilityScore * 10
                             return comp
                         })
+                        this.info.compatibility.total = Math.round(
+                            this.info.compatibility.total / Math.max(this.info.compatibility.scores.length, 1)
+                        ) / 10
                     }
                 }
             },
