@@ -223,7 +223,7 @@
                 },
 
                 copyStringToClipboard: (self) => {
-                    string = JSON.stringify(self.data, null, 4)
+                    string = `const loadData = () => {return ${JSON.stringify(self.data, null, 4)}}`
                     function handler (event){
                         event.clipboardData.setData('text/plain', string)
                         event.preventDefault()
