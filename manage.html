@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sims 4</title>
+    <style>
+        #main > div {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            font-family: sans-serif;
+            align-items: flex-start;
+        }
+
+        .side-menu {
+            width: 25%;
+        }
+
+        div.traits {
+            font-size: 0.8em;
+        }
+
+        div.traits > div:hover:not(.yellow) {
+            background-color: #fffadc;
+        }
+
+        #compatibility, .flex-common {
+            display: flex;
+            flex-flow: row wrap;
+            align-items: stretch;
+            justify-content: space-evenly;
+            gap: 4px;
+        }
+
+        .flex-common > div.border {
+            border: gray 1px solid;
+            cursor: pointer;
+            padding: 2px 8px;
+        }
+
+        .gray {
+            background-color: lightgray;
+        }
+
+        .green {
+            background-color: #8dbf7b;
+        }
+
+        .red {
+            background-color: #dd8585;
+        }
+
+        .yellow {
+            background-color: #ffef96;
+        }
+
+        .close-button:hover {
+            cursor: pointer;
+            color: #dd8585;
+        }
+    </style>
+</head>
+<body>
+<script src="mkreactor.js"></script>
+<script src="data.js"></script>
+<script>
+    let main
+    document.addEventListener('DOMContentLoaded', () => {
+        main = new Component({
+            root: document.querySelector('#main'),
+            data: {
+                data: loadData(),
+                selectedtrait: -1,
+                selectedcategory: -1,
+                selectedcompatibility: -1,
+            },
+            actions: {
+                selecttrait: (self, traitID) => {
+                    if (self.selectedtrait === traitID) self.selectedtrait = -1
+                    else self.selectedtrait = traitID
+                },
+                selectcategory: (self, categoryID) => {
+                    if (self.selectedcategory === categoryID) self.selectedcategory = -1
+                    else self.selectedcategory = categoryID
+                },
+                addtrait: (self) => {
+                    let traitname = prompt('Type new trait')
+                    if (!traitname) return
+                    self.data.traits.push(traitname)
+                },
+                removetrait: (self, index) => {
+                    let traitName = self.data.traits[index]
+                    self.data.categories.forEach((category) => {
+                        category.values.forEach((value) => {
+                            let i = value.map.findIndex((v) => v.trait === traitName)
+                            if (i > -1) value.map.splice(i, 1)
+                        })
+                    })
+                    self.data.compatibilities.forEach((compatibility) => {
+                        let i = compatibility.values.findIndex((v) => v.value === traitName)
+                        if (i > -1) compatibility.values.splice(i, 1)
+                        compatibility.values.forEach((value) => {
+                            let i = value.map.findIndex((v) => v.trait === traitName)
+                            if (i > -1) value.map.splice(i, 1)
+                        })
+                    })
+                    self.data.traits.splice(index, 1)
+                },
+                addcategory: (self) => {
+                    let categoryvaluename = prompt('Type new category')
+                    if (!categoryvaluename) return
+                    self.data.categories.push({
+                        "name": categoryvaluename,
+                        "values": []
+                    })
+                },
+                removecategory: (event, self, categoryID) => {
+                    event.preventDefault;
+                    if (self.selectedcategory === categoryID) self.selectedcategory = -1
+                    if (self.selectedcategory > categoryID) self.selectedcategory -= 1
+                    self.data.categories.splice(categoryID, 1)
+                },
+                getcategoryvaluebytraitindex: (self, categoryValueID) => {
+                    let trait = self.data.traits[self.selectedtrait]
+                    return self.data.categories[self.selectedcategory]
+                        .values[categoryValueID].map.findIndex((v) => v.trait === trait)
+                },
+                getcategoryvaluescorebytrait: (self, actions, categoryValueID) => {
+                    return self.data.categories[self.selectedcategory].values[categoryValueID].map[
+                        actions.getcategoryvaluebytraitindex(self, categoryValueID)
+                        ]?.weight || 0
+                },
+                getcategoryvaluescorebytraitclass: (self, actions, categoryValueID) => {
+                    let res = actions.getcategoryvaluescorebytrait(self, actions, categoryValueID)
+                    if (res > 0) return 'green'
+                    if (res < 0) return 'red'
+                    return ''
+                },
+                changecategoryvaluescorebytrait: (self, actions, categoryValueID, scoreDelta) => {
+                    let categoryvaluebytrait = self.data.categories[self.selectedcategory]
+                        .values[categoryValueID].map
+                    let categoryvaluebytraitindex = actions.getcategoryvaluebytraitindex(self, categoryValueID)
+                    if (categoryvaluebytraitindex === -1) {
+                        categoryvaluebytrait.push({
+                            "trait": self.data.traits[self.selectedtrait],
+                            "weight": scoreDelta
+                        })
+                    } else {
+                        let data = categoryvaluebytrait[categoryvaluebytraitindex]
+                        data.weight += scoreDelta
+                        if (!data.weight) categoryvaluebytrait.splice(categoryvaluebytraitindex, 1)
+                    }
+                },
+                addcategoryvalue: (self) => {
+                    let categoryvaluename = prompt('Type new category value')
+                    if (!categoryvaluename) return
+                    self.data.categories[self.selectedcategory].values.push({
+                        "value": categoryvaluename,
+                        "map": []
+                    })
+                },
+                removecategoryvalue: (self, categoryValueID) => {
+                    self.data.categories[self.selectedcategory].values.splice(categoryValueID, 1)
+                },
+                selectcompatibility: (self, compatibilityID) => {
+                    if (self.selectedcompatibility === compatibilityID) self.selectedcompatibility = -1
+                    else self.selectedcompatibility = compatibilityID
+                },
+                addcompatibility: (self) => {
+                    let compatibilityName = prompt('Type new compatibility')
+                    if (!compatibilityName) return
+                    self.data.compatibilities.push({
+                        "name": compatibilityName,
+                        "values": []
+                    })
+                },
+                removecompatibility: (self, compatibilityID) => {
+                    self.data.compatibilities.splice(compatibilityID, 1)
+                },
+                getcompatibilityvaluebytraitindexes: (self, partnerTrait) => {
+                    if (self.selectedcompatibility === -1 || self.selectedtrait === -1) return [-1, -1]
+                    let personTrait = self.data.traits[self.selectedtrait]
+                    let personTraitIndex = self.data.compatibilities[self.selectedcompatibility]
+                        .values.findIndex((v) => v.value === personTrait)
+                    if (personTraitIndex === -1) return [-1, -1]
+                    let value = self.data.compatibilities[self.selectedcompatibility].values[personTraitIndex]
+                    let partnerTraitIndex = value.map.findIndex((v) => v.trait === partnerTrait)
+                    return [personTraitIndex, partnerTraitIndex]
+
+                },
+                getcompatibilityvaluebytrait: (self, actions, partnerTrait) => {
+                    let [personTraitIndex, partnerTraitIndex] = actions.getcompatibilityvaluebytraitindexes(self, partnerTrait)
+                    if (personTraitIndex === -1) return 0
+                    if (partnerTraitIndex === -1) return 0
+                    return self.data.compatibilities[self.selectedcompatibility].values[personTraitIndex].map[partnerTraitIndex].weight
+                },
+                getcompatibilityvaluebytraitclass: (self, actions, partnerTrait) => {
+                    let res = actions.getcompatibilityvaluebytrait(self, actions, partnerTrait)
+                    if (res > 0) return 'green'
+                    if (res < 0) return 'red'
+                    return ''
+                },
+                changecompatibilityvaluebytrait: (self, actions, partnerTrait, scoreDelta) => {
+                    let compatibilityvalues = self.data.compatibilities[self.selectedcompatibility].values
+                    let [personTraitIndex, partnerTraitIndex] = actions.getcompatibilityvaluebytraitindexes(self, partnerTrait)
+                    if (personTraitIndex === -1) {
+                        compatibilityvalues.push({
+                            "value": self.data.traits[self.selectedtrait],
+                            "map": []
+                        })
+                        personTraitIndex = compatibilityvalues.length - 1
+                    }
+                    if (partnerTraitIndex === -1) {
+                        compatibilityvalues[personTraitIndex].map.push({
+                            "trait": partnerTrait,
+                            "weight": scoreDelta
+                        })
+                    } else {
+                        let data = compatibilityvalues[personTraitIndex].map[partnerTraitIndex]
+                        data.weight += scoreDelta
+                        if (!data.weight) compatibilityvalues[personTraitIndex].map.splice(partnerTraitIndex, 1)
+                    }
+                },
+
+                copyStringToClipboard: (self) => {
+                    string = JSON.stringify(self.data, null, 4)
+                    function handler (event){
+                        event.clipboardData.setData('text/plain', string)
+                        event.preventDefault()
+                        document.removeEventListener('copy', handler, true)
+                    }
+
+                    document.addEventListener('copy', handler, true)
+                    document.execCommand('copy')
+                }
+
+            }
+        })
+        main.render()
+    })
+</script>
+<script type="text/html" id="main-template">
+    <div>
+        <div class="traits flex-common side-menu">
+            <div @for="self.data.traits">
+                <div :class="{{self.selectedtrait === loop.index ? 'yellow' : ''}} border">
+                    <div>
+                        <span @on:click="actions.selecttrait(self,loop.index)">{{loop.item}}</span>
+                        <span @on:click="actions.removetrait(self,loop.index)">&#10799;</span>
+                    </div>
+                </div>
+            </div>
+            <button @on:click="actions.addtrait(self)">+ trait</button>
+        </div>
+        <div class="categories flex-common" style="flex-flow: column wrap; min-width: 25%">
+            <button @on:click="actions.copyStringToClipboard(self)">copy!</button>
+            <div @for="self.data.categories">
+                <div :class="{{self.selectedcategory === loop.index ? 'yellow' : ''}} border"
+                     style="display: flex; flex-flow: row nowrap; justify-content: space-between">
+                    <div @on:click="actions.selectcategory(self, loop.index)">{{loop.item.name}}</div>
+                    <button style="margin-left: 10px" @on:click="actions.removecategory(event,self,loop.index)">
+                        &#10799;
+                    </button>
+                </div>
+            </div>
+            <button @on:click="actions.addcategory(self)">+ category</button>
+            <div class="flex-common" @if="self.selectedcategory>-1" style="flex-flow: column wrap">
+                <div @for="self.data.categories[self.selectedcategory].values">
+                    <div :class="border {{actions.getcategoryvaluescorebytraitclass(self,actions,loop.index)}}"
+                         style="display: flex; flex-flow: row nowrap; justify-content: space-between">
+                        <div>{{loop.item.value}}</div>
+                        <div style="margin-left: 10px" @if="self.selectedtrait > -1">
+                            <button @on:click="actions.changecategoryvaluescorebytrait(self,actions,loop.index,-1)">-
+                            </button>
+                            <span style="display: inline-block; min-width: 20px; text-align: center">
+                                {{actions.getcategoryvaluescorebytrait(self,actions,loop.index)}}
+                            </span>
+                            <button @on:click="actions.changecategoryvaluescorebytrait(self,actions,loop.index,1)">+
+                            </button>
+                            <button @on:click="actions.removecategoryvalue(self,loop.index)">&#10799;</button>
+                        </div>
+                        <div style="margin-left: 10px" @else>
+                            <button @on:click="actions.removecategoryvalue(self,loop.index)">&#10799;</button>
+                        </div>
+                    </div>
+                </div>
+                <button @on:click="actions.addcategoryvalue(self)">+ value</button>
+            </div>
+        </div>
+        <div class="flex-common" style="max-width: 50%">
+            <div class="flex-common">
+                <div @for="self.data.compatibilities">
+                    <div :class="{{self.selectedcompatibility === loop.index ? 'yellow' : ''}} border">
+                        <div>
+                            <span @on:click="actions.selectcompatibility(self,loop.index)">{{loop.item.name}}</span>
+                            <span @on:click="actions.removecompatibility(self,loop.index)">&#10799;</span>
+                        </div>
+                    </div>
+                </div>
+                <button @on:click="actions.addcompatibility(self)">+ compatibility</button>
+            </div>
+            <div @for="self.data.traits" @hold class="traits flex-common">
+                <div :class="{{actions.getcompatibilityvaluebytraitclass(self,actions,loop.item)}} border"
+                     style="display: flex; flex-flow: row nowrap; justify-content: space-between">
+                    <div>{{loop.item}}</div>
+                    <div style="margin-left: 10px" @if="self.selectedtrait > -1 && self.selectedcompatibility > -1">
+                        <button @on:click="actions.changecompatibilityvaluebytrait(self,actions,loop.item,-1)">-</button>
+                        <span style="display: inline-block; min-width: 20px; text-align: center">
+                            {{actions.getcompatibilityvaluebytrait(self,actions,loop.item)}}
+                        </span>
+                        <button @on:click="actions.changecompatibilityvaluebytrait(self,actions,loop.item,1)">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<div id="main"></div>
+</body>
+</html>

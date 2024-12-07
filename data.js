@@ -467,7 +467,7 @@ const loadData = () => {
                         "value": "Жалобы",
                         "map": [
                             {
-                                "trait": "Весёлый",
+                                "trait": "Веселый",
                                 "weight": -1
                             },
                             {
@@ -666,7 +666,7 @@ const loadData = () => {
                         "value": "Обсуждение интересов",
                         "map": [
                             {
-                                "trait": "Весёлый",
+                                "trait": "Веселый",
                                 "weight": 1
                             },
                             {
@@ -687,7 +687,7 @@ const loadData = () => {
                         "value": "Обсуждение увлечений",
                         "map": [
                             {
-                                "trait": "Весёлый",
+                                "trait": "Веселый",
                                 "weight": 1
                             },
                             {
@@ -704,7 +704,7 @@ const loadData = () => {
                         "value": "Плохие поступки",
                         "map": [
                             {
-                                "trait": "Весёлый",
+                                "trait": "Веселый",
                                 "weight": -1
                             },
                             {
@@ -799,7 +799,7 @@ const loadData = () => {
                         "value": "Ссоры",
                         "map": [
                             {
-                                "trait": "Весёлый",
+                                "trait": "Веселый",
                                 "weight": -1
                             },
                             {
@@ -911,7 +911,7 @@ const loadData = () => {
                         "value": "Шутки",
                         "map": [
                             {
-                                "trait": "Весёлый",
+                                "trait": "Веселый",
                                 "weight": 1
                             },
                             {
