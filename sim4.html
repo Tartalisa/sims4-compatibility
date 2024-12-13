@@ -442,7 +442,7 @@
             <h2 :class="tab-name {{actions.tabSelectionMode.call(self, 'compatibility')}}"
                 @on:click="actions.setTab('compatibility')">
                 Совместимость
-                <button @on:click="events.clearpartnertraits()">Очистить ЧХ</button>
+                <button @on:click="events.clearpartnertraits()">&#x2702;&#xFE0F ЧХ партнера</button>
             </h2>
         </div>
         <div class="tab-body">
@@ -460,7 +460,7 @@
     <div>
         <div class="side-menu">
             <h2>Черты характера
-                <button @on:click="actions.clearTraits(actions)">Очистить все</button>
+                <button @on:click="actions.clearTraits(actions)">&#x2702;&#xFE0F ЧХ персонажа</button>
             </h2>
             <traits id="selected-traits" class="traits flex-common" :selectedtraits="{{self.info.personTraits}}"
                     @on:updatetrait="{{actions.toggleTrait('personTraits')}}"></traits>
