@@ -21,6 +21,11 @@
 
         div.traits > div:hover:not(.yellow) {
             background-color: #fffadc;
+            transition: background-color .2s ease-in-out;
+        }
+
+        div.traits > div:not(.yellow) {
+            transition: background-color .2s ease-in-out;
         }
 
         #partner-traits {
@@ -39,7 +44,7 @@
         #compatibility, .flex-common {
             display: flex;
             flex-flow: row wrap;
-            align-items: stretch;
+            align-items: flex-start;
             justify-content: space-evenly;
             gap: 4px;
         }
@@ -89,11 +94,22 @@
 
         table tbody tr:hover {
             background-color: #ececec;
+            transition: background-color .2s ease-in-out;
+        }
+
+        table tbody tr {
+            transition: background-color .2s ease-in-out;
         }
 
         .close-button:hover {
             cursor: pointer;
-            color: #dd8585;
+            color: #fff;
+            background-color: #e06273;
+            transition: background-color .2s ease-in-out;
+        }
+
+        .close-button {
+            transition: background-color .2s ease-in-out;
         }
 
         .tab-header > .tab-name {
@@ -244,7 +260,8 @@
                         this.history.push(this.info.toJSON())
                         localStorage.setItem('HISTORY', JSON.stringify(this.history))
                     },
-                    removeHistoryData: function (idx) {
+                    removeHistoryData: function (event, idx) {
+                        event.stopPropagation()
                         this.history.splice(idx, 1)
                         localStorage.setItem('HISTORY', JSON.stringify(this.history))
                     },
@@ -404,7 +421,7 @@
             </tr>
             </thead>
             <tbody @for="self.history" @hold>
-            <tr @on:dblclick="actions.setHistoryData(events, loop.item)">
+            <tr @on:click="actions.setHistoryData(events, loop.item)">
                 <td>{{loop.item.person}}</td>
                 <td>{{loop.item.partner}}</td>
                 <td>
@@ -413,7 +430,7 @@
                     </div>
                     <div>{{loop.item.compatibility.total}} (Всего)</div>
                 </td>
-                <td><span @on:click="actions.removeHistoryData(loop.index)" class="close-button">&#10799;</span></td>
+                <td @on:click="actions.removeHistoryData(event, loop.index)" class="close-button"><span>&#10799;</span></td>
             </tr>
             </tbody>
         </table>
