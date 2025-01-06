@@ -359,6 +359,10 @@ const loadData = () => {return {
                         {
                             "trait": "Любитель мрака",
                             "weight": -1
+                        },
+                        {
+                            "trait": "Грымза",
+                            "weight": -1
                         }
                     ]
                 },
@@ -396,6 +400,10 @@ const loadData = () => {return {
                         {
                             "trait": "Щедрый",
                             "weight": 1
+                        },
+                        {
+                            "trait": "Грымза",
+                            "weight": -1
                         }
                     ]
                 },
@@ -1298,6 +1306,10 @@ const loadData = () => {return {
                         {
                             "trait": "Непостоянный",
                             "weight": -1
+                        },
+                        {
+                            "trait": "Грымза",
+                            "weight": -1
                         }
                     ]
                 },
@@ -1660,6 +1672,10 @@ const loadData = () => {return {
                         },
                         {
                             "trait": "Любитель мрака",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Грымза",
                             "weight": -1
                         }
                     ]
@@ -4228,6 +4244,26 @@ const loadData = () => {return {
                         },
                         {
                             "trait": "Творец",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Веселый",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Добрый",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Дружелюбный",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Свой в доску",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Угрюмый",
                             "weight": 1
                         }
                     ]
@@ -7536,8 +7572,52 @@ const loadData = () => {return {
                             "weight": 1
                         },
                         {
-                            "trait": "Кринжовый",
-                            "weight": 1
+                            "trait": "Веселый",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Влюбчивый",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Добрый",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Дружелюбный",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Душа компании",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Инсайдер",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Карьерист",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Романтик",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Самоуверенный",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Свой в доску",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Тяга к корням",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Щедрый",
+                            "weight": -1
                         }
                     ]
                 },
