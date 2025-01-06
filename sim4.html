@@ -477,7 +477,7 @@
     <div>
         <div class="side-menu">
             <h2>Черты характера
-                <button @on:click="actions.clearTraits(actions)">&#x2702;&#xFE0F ЧХ персонажа</button>
+                <button @on:click="actions.clearTraits(actions)">&#x2702;&#xFE0F ЧХ все</button>
             </h2>
             <traits id="selected-traits" class="traits flex-common" :selectedtraits="{{self.info.personTraits}}"
                     @on:updatetrait="{{actions.toggleTrait('personTraits')}}"></traits>
