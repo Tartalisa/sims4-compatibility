@@ -315,7 +315,6 @@
                 },
                 clearTraits: function (actions) {
                     this.info.personTraits.clear()
-                    actions.clearPartnerTraits.call(this)
                 },
                 clearPartnerTraits: function () {
                     this.info.partnerTraits.clear()
@@ -426,9 +425,9 @@
                 <td>{{loop.item.partner}}</td>
                 <td>
                     <div @for="loop.item.compatibility.scores">
-                        <div>{{loop.item.compatibilityScore}} ({{loop.item.name}})</div>
+                        <div>{{loop.item.name}}: {{loop.item.compatibilityScore}}</div>
                     </div>
-                    <div>{{loop.item.compatibility.total}} (Всего)</div>
+                    <div><b>Общая: {{loop.item.compatibility.total}}</b></div>
                 </td>
                 <td @on:click="actions.removeHistoryData(event, loop.index)" class="close-button"><span>&#10799;</span></td>
             </tr>
@@ -477,7 +476,7 @@
     <div>
         <div class="side-menu">
             <h2>Черты характера
-                <button @on:click="actions.clearTraits(actions)">&#x2702;&#xFE0F ЧХ все</button>
+                <button @on:click="actions.clearTraits(actions)">&#x2702;&#xFE0F ЧХ персонажа</button>
             </h2>
             <traits id="selected-traits" class="traits flex-common" :selectedtraits="{{self.info.personTraits}}"
                     @on:updatetrait="{{actions.toggleTrait('personTraits')}}"></traits>
