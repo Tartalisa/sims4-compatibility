@@ -2187,7 +2187,7 @@ const loadData = () => {return {
                     ]
                 },
                 {
-                    "value": "Мультимед. И тех.",
+                    "value": "Мультимед. и тех.",
                     "map": [
                         {
                             "trait": "Вечное дитя",
@@ -2209,7 +2209,7 @@ const loadData = () => {return {
                     ]
                 },
                 {
-                    "value": "Приготов. Напитков",
+                    "value": "Приготов. напитков",
                     "map": [
                         {
                             "trait": "Гурман",
@@ -3932,7 +3932,7 @@ const loadData = () => {return {
                         },
                         {
                             "trait": "Семьянин",
-                            "weight": 3
+                            "weight": 1
                         },
                         {
                             "trait": "Ревнивый",
