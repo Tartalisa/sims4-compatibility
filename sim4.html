@@ -146,7 +146,10 @@
                         compatibilityScore: 0
                     }
                 }),
-                total: 0
+                total: 0,
+                personTotal: 0,
+                partnerTotal: 0,
+                anotherTotalScore: 0
             }
             this.personTraits = new Set()
             this.partnerTraits = new Set()
@@ -327,12 +330,18 @@
                         }
                     })
                     this.info.compatibility.total = 0
+                    this.info.compatibility.personTotal = 0
+                    this.info.compatibility.partnerTotal = 0
+                    this.info.compatibility.anotherTotalScore = 0
                 },
                 toggleTrait: function (traitSetName) {
                     return function (trait) {
                         if (this.info[traitSetName].has(trait)) this.info[traitSetName].delete(trait)
                         else this.info[traitSetName].add(trait)
                         this.info.compatibility.total = 0
+                        this.info.compatibility.personTotal = 0
+                        this.info.compatibility.partnerTotal = 0
+                        this.info.compatibility.anotherTotalScore = 0
                         this.info.compatibility.scores = DATA.compatibilities.map(compatibility => {
                             let comp = {
                                 name: compatibility.name,
@@ -344,6 +353,8 @@
                                 comp.personScore += calcCompatibilityByTrait(compatibilityTrait, this.info.partnerTraits, this.info.personTraits)
                                 comp.partnerScore += calcCompatibilityByTrait(compatibilityTrait, this.info.personTraits, this.info.partnerTraits)
                             }
+                            this.info.compatibility.personTotal += comp.personScore
+                            this.info.compatibility.partnerTotal += comp.partnerScore
                             comp.compatibilityScore = parseInt(calcCompatibilityScore(comp.personScore, comp.partnerScore) * 10) / 10
                             this.info.compatibility.total += comp.compatibilityScore * 10
                             return comp
@@ -351,6 +362,9 @@
                         this.info.compatibility.total = Math.round(
                             this.info.compatibility.total / Math.max(this.info.compatibility.scores.length, 1)
                         ) / 10
+                        this.info.compatibility.anotherTotalScore = Math.round(calcCompatibilityScore(
+                            this.info.compatibility.personTotal, this.info.compatibility.partnerTotal
+                        ) / Math.max(this.info.compatibility.scores.length, 1) * 10) / 10
                     }
                 }
             },
@@ -402,7 +416,15 @@
             </tbody>
             <tfoot>
             <tr>
+                <td></td>
+                <td>Оценка <b>{{self.info.person}}</b>: {{self.info.compatibility.personTotal}}</td>
+                <td>Оценка <b>{{self.info.partner}}</b>: {{self.info.compatibility.partnerTotal}}</td>
+            </tr>
+            <tr>
                 <td colspan="3"><b>Общая совместимость:</b> {{self.info.compatibility.total}}</td>
+            </tr>
+            <tr>
+                <td colspan="3"><b>Общая оценка:</b> {{self.info.compatibility.anotherTotalScore}}</td>
             </tr>
             </tfoot>
         </table>
