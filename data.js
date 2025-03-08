@@ -124,27 +124,6 @@ const loadData = () => {return {
                     ]
                 },
                 {
-                    "value": "Идеалисты",
-                    "map": [
-                        {
-                            "trait": "Гений",
-                            "weight": -1
-                        },
-                        {
-                            "trait": "Искусствовед",
-                            "weight": 1
-                        },
-                        {
-                            "trait": "Меломан",
-                            "weight": 1
-                        },
-                        {
-                            "trait": "Творец",
-                            "weight": 1
-                        }
-                    ]
-                },
-                {
                     "value": "Идущ. на поводу у эмоц.",
                     "map": [
                         {
@@ -222,6 +201,27 @@ const loadData = () => {return {
                         },
                         {
                             "trait": "Мудрый",
+                            "weight": 1
+                        }
+                    ]
+                },
+                {
+                    "value": "Любители искусства",
+                    "map": [
+                        {
+                            "trait": "Гений",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Искусствовед",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Меломан",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Творец",
                             "weight": 1
                         }
                     ]
@@ -1400,27 +1400,6 @@ const loadData = () => {return {
                     ]
                 },
                 {
-                    "value": "Идеализм",
-                    "map": [
-                        {
-                            "trait": "Искусствовед",
-                            "weight": 1
-                        },
-                        {
-                            "trait": "Меломан",
-                            "weight": 1
-                        },
-                        {
-                            "trait": "Творец",
-                            "weight": 1
-                        },
-                        {
-                            "trait": "Щедрый",
-                            "weight": 1
-                        }
-                    ]
-                },
-                {
                     "value": "Интеллектуалы",
                     "map": [
                         {
@@ -1467,6 +1446,27 @@ const loadData = () => {return {
                         {
                             "trait": "Фриган",
                             "weight": -1
+                        },
+                        {
+                            "trait": "Щедрый",
+                            "weight": 1
+                        }
+                    ]
+                },
+                {
+                    "value": "Любовь к искусству",
+                    "map": [
+                        {
+                            "trait": "Искусствовед",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Меломан",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Творец",
+                            "weight": 1
                         },
                         {
                             "trait": "Щедрый",
