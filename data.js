@@ -10,8 +10,8 @@ const loadData = () => {return {
         "Влюбчивый",
         "Высокие запросы",
         "Гений",
-        "Грымза",
         "Гик",
+        "Грымза",
         "Гурман",
         "Дитя океана",
         "Дитя острова",
@@ -21,6 +21,7 @@ const loadData = () => {return {
         "Душа компании",
         "Задира",
         "Злой",
+        "Идализм",
         "Инсайдер",
         "Искусствовед",
         "Карьерист",
@@ -34,6 +35,7 @@ const loadData = () => {return {
         "Любитель мрака",
         "Любовь к животным",
         "Любопытный",
+        "Махинатор",
         "Меломан",
         "Мудрый",
         "Недотрога",
@@ -293,6 +295,10 @@ const loadData = () => {return {
                         {
                             "trait": "Уважительный",
                             "weight": -1
+                        },
+                        {
+                            "trait": "Идализм",
+                            "weight": -1
                         }
                     ]
                 },
@@ -404,6 +410,10 @@ const loadData = () => {return {
                         {
                             "trait": "Грымза",
                             "weight": -1
+                        },
+                        {
+                            "trait": "Идализм",
+                            "weight": 1
                         }
                     ]
                 },
@@ -502,6 +512,10 @@ const loadData = () => {return {
                         },
                         {
                             "trait": "Кринжовый",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Махинатор",
                             "weight": 1
                         }
                     ]
@@ -627,6 +641,14 @@ const loadData = () => {return {
                         {
                             "trait": "Щедрый",
                             "weight": -1
+                        },
+                        {
+                            "trait": "Идализм",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Махинатор",
+                            "weight": 1
                         }
                     ]
                 },
@@ -806,6 +828,10 @@ const loadData = () => {return {
                         {
                             "trait": "Эгоцентричный",
                             "weight": 1
+                        },
+                        {
+                            "trait": "Идализм",
+                            "weight": 1
                         }
                     ]
                 },
@@ -830,6 +856,10 @@ const loadData = () => {return {
                         },
                         {
                             "trait": "Романтик",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Идализм",
                             "weight": 1
                         }
                     ]
@@ -926,6 +956,14 @@ const loadData = () => {return {
                         {
                             "trait": "Грымза",
                             "weight": 1
+                        },
+                        {
+                            "trait": "Идализм",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Махинатор",
+                            "weight": 1
                         }
                     ]
                 },
@@ -1005,6 +1043,10 @@ const loadData = () => {return {
                         {
                             "trait": "Холерик",
                             "weight": 1
+                        },
+                        {
+                            "trait": "Идализм",
+                            "weight": -1
                         }
                     ]
                 },
@@ -1067,6 +1109,10 @@ const loadData = () => {return {
                         {
                             "trait": "Угрюмый",
                             "weight": 1
+                        },
+                        {
+                            "trait": "Махинатор",
+                            "weight": 1
                         }
                     ]
                 },
@@ -1104,6 +1150,10 @@ const loadData = () => {return {
                         {
                             "trait": "Холерик",
                             "weight": 1
+                        },
+                        {
+                            "trait": "Идализм",
+                            "weight": -1
                         }
                     ]
                 },
@@ -1574,6 +1624,10 @@ const loadData = () => {return {
                         {
                             "trait": "Мудрый",
                             "weight": -1
+                        },
+                        {
+                            "trait": "Идализм",
+                            "weight": -1
                         }
                     ]
                 },
@@ -1677,6 +1731,14 @@ const loadData = () => {return {
                         {
                             "trait": "Грымза",
                             "weight": -1
+                        },
+                        {
+                            "trait": "Идализм",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Махинатор",
+                            "weight": -1
                         }
                     ]
                 },
@@ -1771,6 +1833,10 @@ const loadData = () => {return {
                         {
                             "trait": "Романтик",
                             "weight": -1
+                        },
+                        {
+                            "trait": "Идализм",
+                            "weight": -1
                         }
                     ]
                 },
@@ -1853,6 +1919,10 @@ const loadData = () => {return {
                         {
                             "trait": "Тяга к корням",
                             "weight": 1
+                        },
+                        {
+                            "trait": "Идализм",
+                            "weight": 1
                         }
                     ]
                 },
@@ -1923,6 +1993,10 @@ const loadData = () => {return {
                         {
                             "trait": "Романтик",
                             "weight": 1
+                        },
+                        {
+                            "trait": "Идализм",
+                            "weight": -1
                         }
                     ]
                 },
@@ -1963,6 +2037,10 @@ const loadData = () => {return {
                         },
                         {
                             "trait": "Эгоцентричный",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Махинатор",
                             "weight": 1
                         }
                     ]
@@ -2024,6 +2102,10 @@ const loadData = () => {return {
                         {
                             "trait": "Практичный",
                             "weight": 1
+                        },
+                        {
+                            "trait": "Махинатор",
+                            "weight": 1
                         }
                     ]
                 },
@@ -2044,6 +2126,10 @@ const loadData = () => {return {
                         },
                         {
                             "trait": "Семьянин",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Идализм",
                             "weight": -1
                         }
                     ]
@@ -4322,6 +4408,68 @@ const loadData = () => {return {
                         },
                         {
                             "trait": "Угрюмый",
+                            "weight": 1
+                        }
+                    ]
+                },
+                {
+                    "value": "Идализм",
+                    "map": [
+                        {
+                            "trait": "Веселый",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Добрый",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Задира",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Злой",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Практичный",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Сноб",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Угрюмый",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Холерик",
+                            "weight": -1
+                        }
+                    ]
+                },
+                {
+                    "value": "Махинатор",
+                    "map": [
+                        {
+                            "trait": "Добрый",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Задира",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Клептоман",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Практичный",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Растяпа",
                             "weight": 1
                         }
                     ]
@@ -7796,6 +7944,128 @@ const loadData = () => {return {
                         },
                         {
                             "trait": "Экоэнтузиаст",
+                            "weight": 1
+                        }
+                    ]
+                },
+                {
+                    "value": "Идализм",
+                    "map": [
+                        {
+                            "trait": "Веселый",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Вечное дитя",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Влюбчивый",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Добрый",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Задира",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Злой",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Карьерист",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Недотрога",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Непостоянный",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Параноик",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Преданный",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Против детей",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Ревнивый",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Романтик",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Семьянин",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Тяга к корням",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Угрюмый",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Холерик",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Щедрый",
+                            "weight": 1
+                        }
+                    ]
+                },
+                {
+                    "value": "Махинатор",
+                    "map": [
+                        {
+                            "trait": "Веселый",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Высокие запросы",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Добрый",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Карьерист",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Любопытный",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Практичный",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Сноб",
+                            "weight": 1
+                        },
+                        {
+                            "trait": "Щедрый",
+                            "weight": -1
+                        },
+                        {
+                            "trait": "Эгоцентричный",
                             "weight": 1
                         }
                     ]
