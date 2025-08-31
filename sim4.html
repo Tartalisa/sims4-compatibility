@@ -29,7 +29,7 @@
         }
 
         #partner-traits {
-            width: 33%;
+            width: 33.3%;
         }
 
         #compatibility-results {
@@ -133,10 +133,45 @@
 <script src="mkreactor.js"></script>
 <script src="data.js"></script>
 <script>
+    class Character {
+        constructor(name, traits = []) {
+            this.name = name;
+            this.traits = new Set(traits);
+        }
+
+        // Метод для получения всех черт в виде массива
+        getTraitsArray() {
+            return Array.from(this.traits);
+        }
+
+        static fromJSON(json) {
+            return new Character(json['name'], json['traits'] || [])
+        }
+
+        toJSON() {
+            // Преобразует объект Info в JSON для сохранения
+            return {
+                'name': this.name,
+                'traits': this.getTraitsArray(),
+            }
+        }
+    }
+
+    let persons = {
+        0: new Character('Персонаж', []),
+        1: new Character('Персонаж 2', []),
+    }
+
+    let partners = {
+        0: new Character('Партнер', []),
+        1: new Character('Партнер 2', []),
+    }
+
     class Info {
         constructor() {
-            this.person = 'Персонаж'
-            this.partner = 'Партнер'
+            // Инициализирует данные: дефолтные персонаж и партнер и их совместимости
+            this.person = 0
+            this.partner = 0
             this.compatibility = {
                 scores: DATA.compatibilities.map(compatibility => {
                     return {
@@ -148,40 +183,71 @@
                 }),
                 total: 0,
                 personTotal: 0,
-                partnerTotal: 0,
-                anotherTotalScore: 0
+                partnerTotal: 0
             }
-            this.personTraits = new Set()
-            this.partnerTraits = new Set()
+        }
+
+        setPerson(person) {
+            this.person = person
+            this.calcCompatibilityScore()
+        }
+
+        calcCompatibilityScore() {
+            this.compatibility.total = 0
+            this.compatibility.personTotal = 0
+            this.compatibility.partnerTotal = 0
+            this.compatibility.scores = DATA.compatibilities.map(compatibility => {
+                let comp = {
+                    name: compatibility.name,
+                    personScore: 0,
+                    partnerScore: 0,
+                    compatibilityScore: 0
+                }
+                for (let compatibilityTrait of compatibility.values) {
+                    comp.personScore +=
+                        calcCompatibilityByTrait(compatibilityTrait, partners[this.partner].traits, persons[this.person].traits)
+                    comp.partnerScore +=
+                        calcCompatibilityByTrait(compatibilityTrait, persons[this.person].traits, partners[this.partner].traits)
+                }
+                this.compatibility.personTotal += comp.personScore
+                this.compatibility.partnerTotal += comp.partnerScore
+                comp.compatibilityScore =
+                    parseInt(calcCompatibilityScore(comp.personScore, comp.partnerScore) * 10) / 10
+                this.compatibility.total += comp.compatibilityScore * 10
+                return comp
+            })
+            this.compatibility.total = Math.round(
+                this.compatibility.total / Math.max(this.compatibility.scores.length, 1)
+            ) / 10
         }
 
         static fromJSON(json) {
+            // Восстанавливает объект Info из JSON (полученного, например, из localStorage)
             let info = new Info()
             info.person = json['person']
             info.partner = json['partner']
             info.compatibility = json['compatibility']
-            info.personTraits = new Set(json['personTraits'])
-            info.partnerTraits = new Set(json['partnerTraits'])
             return info
         }
 
         toJSON() {
+            // Преобразует объект Info в JSON для сохранения
             return {
                 'person': this.person,
                 'partner': this.partner,
-                'compatibility': Object.assign({}, this.compatibility),
-                'personTraits': Array.from(this.personTraits),
-                'partnerTraits': Array.from(this.partnerTraits),
+                'compatibility': Object.assign({}, this.compatibility)
             }
         }
     }
 
     const calcCompatibilityByTrait = (compatibility, traitsSet, otherTraitsSet) => {
+        // Считает сумму весов совместимости для одной категории (trait)
         if (!otherTraitsSet.has(compatibility.value)) return 0
         return compatibility.map.map(v => traitsSet.has(v.trait) ? v.weight : 0).reduce((a, b) => a + b, 0)
     }
 
     const calcCompatibilityScore = (personScore, partnerScore) => {
+        // Считает итоговый балл совместимости между персонажем и партнером
         let avg = (personScore + partnerScore) / 2
         let D = Math.abs(personScore - partnerScore)
         let top = 3
@@ -192,6 +258,7 @@
     }
 
     const getClass = (num) => {
+        // Определяет цвет класса для отображения (зеленый, красный, серый)
         if (num > 0) return 'green'
         if (num < 0) return 'red'
         return 'gray'
@@ -206,6 +273,7 @@
                 },
                 actions: {
                     calcClassName: function (categoryValue) {
+                        // Вычисляет класс (цвет) для категории
                         let sum = categoryValue['map'].reduce((p, c) => {
                             if (this.traits.has(c.trait)) p += c.weight
                             return p
@@ -222,6 +290,7 @@
                 },
                 actions: {
                     calcClassName: function () {
+                        // Вычисляет случайный класс (цвет) для категории
                         let weight = Math.floor(Math.random() * 2) * 2 - 1
                         return getClass(weight)
                     },
@@ -245,36 +314,9 @@
         registerComponent('comparison', () => {
             return {
                 data: {
-                    info: {},
-                    history: JSON.parse(localStorage.getItem('HISTORY') || '[]')
+                    info: {}
                 },
-                actions: {
-                    clearHistory: function () {
-                        localStorage.removeItem('HISTORY')
-                        this.history = []
-                    },
-                    setPersonName: function (newValue) {
-                        this.info.person = newValue
-                    },
-                    setPartnerName: function (newValue) {
-                        this.info.partner = newValue
-                    },
-                    addToHistory: function () {
-                        this.history.push(this.info.toJSON())
-                        localStorage.setItem('HISTORY', JSON.stringify(this.history))
-                    },
-                    removeHistoryData: function (event, idx) {
-                        event.stopPropagation()
-                        this.history.splice(idx, 1)
-                        localStorage.setItem('HISTORY', JSON.stringify(this.history))
-                    },
-                    setHistoryData: function (events, info) {
-                        events.setinfo(Info.fromJSON(info))
-                    },
-                    getDetails: function (currCompatibility) {
-                        return currCompatibility.scores.map(v => `${v.compatibilityScore} (${v.name})`).join('\n')
-                    }
-                },
+                actions: {},
                 events: {
                     setinfo: (info) => null
                 }
@@ -284,7 +326,15 @@
             return {data: {info: {}}}
         })
         registerComponent('comparison-tab', () => {
-            return {data: {info: {}}}
+            return {
+                data: {
+                    info: {}
+                },
+                events: {
+                    updatecharacter: (character) => null,
+                    selectpartner: (partnerId) => null
+                }
+            }
         })
         registerComponent('tabs', () => {
             return {
@@ -303,10 +353,52 @@
                     }
                 },
                 events: {
-                    clearpartnertraits: () => null
+                    clearpartnertraits: () => null,
+                    updatecharacter: (character) => null,
+                    selectpartner: (characterId) => null
                 }
             }
         })
+        registerComponent('character-editor', () => {
+            return {
+                data: {character: {}},
+                actions: {
+                    clearTraits: function (events) {
+                        this.character.traits.clear()
+                        events.updatecharacter(this.character)
+                    },
+                    toggleTrait: function (events) {
+                        return function (trait) {
+                            if (this.character.traits.has(trait)) this.character.traits.delete(trait)
+                            else this.character.traits.add(trait)
+                            events.updatecharacter(this.character)
+                        }
+                    },
+                    // Новый метод для установки имени персонажа
+                    setName: function (events, newName) {
+                        this.character.name = newName
+                        events.updatecharacter(this.character)
+                    }
+                },
+                events: {
+                    updatecharacter: (character) => null
+                }
+            }
+        })
+
+        registerComponent('character-list', () => {
+            return {
+                data: {
+                    selectedid: null,
+                    characters: {}
+                },
+                events: {
+                    selectcharacter: (characterId) => null,
+                    setCharacter: (character) => null
+                }
+            }
+        })
+
         window.main = new Component({
             root: document.querySelector('#main'),
             data: {
@@ -316,57 +408,28 @@
                 setInfo: function (info) {
                     this.info = Info.fromJSON(info.toJSON())
                 },
-                clearTraits: function (actions) {
-                    this.info.personTraits.clear()
+                // Новый метод для установки персонажа
+                setPerson: function (person) {
+                    persons[this.info.person] = Character.fromJSON(person.toJSON())
+                    this.info.calcCompatibilityScore()
+                    main.triggerRender()
                 },
-                clearPartnerTraits: function () {
-                    this.info.partnerTraits.clear()
-                    this.info.compatibility.scores = DATA.compatibilities.map(compatibility => {
-                        return {
-                            name: compatibility.name,
-                            personScore: 0,
-                            partnerScore: 0,
-                            compatibilityScore: 0
-                        }
-                    })
-                    this.info.compatibility.total = 0
-                    this.info.compatibility.personTotal = 0
-                    this.info.compatibility.partnerTotal = 0
-                    this.info.compatibility.anotherTotalScore = 0
+                setPersonId: function (personId) {
+                    this.info.person = personId
+                    this.info.calcCompatibilityScore()
+                    main.triggerRender()
                 },
-                toggleTrait: function (traitSetName) {
-                    return function (trait) {
-                        if (this.info[traitSetName].has(trait)) this.info[traitSetName].delete(trait)
-                        else this.info[traitSetName].add(trait)
-                        this.info.compatibility.total = 0
-                        this.info.compatibility.personTotal = 0
-                        this.info.compatibility.partnerTotal = 0
-                        this.info.compatibility.anotherTotalScore = 0
-                        this.info.compatibility.scores = DATA.compatibilities.map(compatibility => {
-                            let comp = {
-                                name: compatibility.name,
-                                personScore: 0,
-                                partnerScore: 0,
-                                compatibilityScore: 0
-                            }
-                            for (let compatibilityTrait of compatibility.values) {
-                                comp.personScore += calcCompatibilityByTrait(compatibilityTrait, this.info.partnerTraits, this.info.personTraits)
-                                comp.partnerScore += calcCompatibilityByTrait(compatibilityTrait, this.info.personTraits, this.info.partnerTraits)
-                            }
-                            this.info.compatibility.personTotal += comp.personScore
-                            this.info.compatibility.partnerTotal += comp.partnerScore
-                            comp.compatibilityScore = parseInt(calcCompatibilityScore(comp.personScore, comp.partnerScore) * 10) / 10
-                            this.info.compatibility.total += comp.compatibilityScore * 10
-                            return comp
-                        })
-                        this.info.compatibility.total = Math.round(
-                            this.info.compatibility.total / Math.max(this.info.compatibility.scores.length, 1)
-                        ) / 10
-                        this.info.compatibility.anotherTotalScore = Math.round(calcCompatibilityScore(
-                            this.info.compatibility.personTotal, this.info.compatibility.partnerTotal
-                        ) / Math.max(this.info.compatibility.scores.length, 1) * 10) / 10
-                    }
-                }
+                // Новый метод для установки партнера
+                setPartner: function (partner) {
+                    partners[this.info.partner] = Character.fromJSON(partner.toJSON())
+                    this.info.calcCompatibilityScore()
+                    main.triggerRender()
+                },
+                setPartnerId: function (partnerId) {
+                    this.info.partner = partnerId
+                    this.info.calcCompatibilityScore()
+                    main.triggerRender()
+                },
             },
         })
         main.render()
@@ -403,8 +466,10 @@
             <thead>
             <tr>
                 <th>Категория совместимости</th>
-                <th><input :value="{{self.info.person}}" @on:input="actions.setPersonName(event.target.value)"></th>
-                <th><input :value="{{self.info.partner}}" @on:input="actions.setPartnerName(event.target.value)"></th>
+                <th><input :value="{{persons[self.info.person].name}}">
+                </th>
+                <th><input :value="{{partners[self.info.partner].name}}">
+                </th>
             </tr>
             </thead>
             <tbody @for="self.info.compatibility.scores">
@@ -416,50 +481,20 @@
             </tbody>
             <tfoot>
             <tr>
-                <td></td>
-                <td>Оценка <b>{{self.info.person}}</b>: {{self.info.compatibility.personTotal}}</td>
-                <td>Оценка <b>{{self.info.partner}}</b>: {{self.info.compatibility.partnerTotal}}</td>
+                <td>Оценка</td>
+                <td><b>{{persons[self.info.person].name}}</b>: {{self.info.compatibility.personTotal}}</td>
+                <td><b>{{partners[self.info.partner].name}}</b>: {{self.info.compatibility.partnerTotal}}</td>
             </tr>
             <tr>
                 <td colspan="3"><b>Общая совместимость:</b> {{self.info.compatibility.total}}</td>
             </tr>
-            <tr>
-                <td colspan="3"><b>Общая оценка:</b> {{self.info.compatibility.anotherTotalScore}}</td>
-            </tr>
             </tfoot>
-        </table>
-        <div>
-            <button @on:click="actions.addToHistory()">Сохранить</button>
-            <button @on:click="actions.clearHistory()">Очистить таблицу</button>
-        </div>
-        <br>
-        <table id="history" style="width: 100%">
-            <thead>
-            <tr>
-                <td>Персонаж</td>
-                <td>Партнер</td>
-                <td colspan="2" style="width: 40%">Совместимость</td>
-            </tr>
-            </thead>
-            <tbody @for="self.history" @hold>
-            <tr @on:click="actions.setHistoryData(events, loop.item)">
-                <td>{{loop.item.person}}</td>
-                <td>{{loop.item.partner}}</td>
-                <td>
-                    <div @for="loop.item.compatibility.scores">
-                        <div>{{loop.item.name}}: {{loop.item.compatibilityScore}}</div>
-                    </div>
-                    <div><b>Общая: {{loop.item.compatibility.total}}</b></div>
-                </td>
-                <td @on:click="actions.removeHistoryData(event, loop.index)" class="close-button"><span>&#10799;</span></td>
-            </tr>
-            </tbody>
         </table>
     </div>
 </script>
 <script type="text/html" id="categories-tab-template">
     <div>
-        <categories class="flex-common" :traits="{{self.info.personTraits}}"
+        <categories class="flex-common" :traits="{{persons[self.info.person].traits}}"
                     :categories="{{DATA.categories}}"></categories>
         <br>
         <randoms class="flex-common" :randoms="{{DATA.randoms}}"></randoms>
@@ -467,9 +502,19 @@
 </script>
 <script type="text/html" id="comparison-tab-template">
     <div id="compatibility">
-        <comparison id="compatibility-results" :info="{{self.info}}" @on:setinfo="{{events.setinfo}}"></comparison>
-        <traits id="partner-traits" class="traits flex-common" :selectedtraits="{{self.info.partnerTraits}}"
-                @on:updatetrait="{{events.updatetrait}}"></traits>
+        <comparison id="compatibility-results"
+                    :info="{{self.info}}"
+                    @on:setinfo="{{events.setinfo}}"></comparison>
+        <div id="partner-traits">
+            <character-list :characters="{{partners}}"
+                            :selectedId="{{self.info.partner}}"
+                            @on:selectcharacter="{{events.selectpartner}}"></character-list>
+            <character-editor
+                    :character="{{partners[self.info.partner]}}"
+                    @on:updatecharacter="{{events.updatecharacter}}"
+            ></character-editor>
+        </div>
+
     </div>
 </script>
 <script type="text/html" id="tabs-template">
@@ -480,7 +525,6 @@
             <h2 :class="tab-name {{actions.tabSelectionMode.call(self, 'compatibility')}}"
                 @on:click="actions.setTab('compatibility')">
                 Совместимость
-                <button @on:click="events.clearpartnertraits()">&#x2702;&#xFE0F ЧХ партнера</button>
             </h2>
         </div>
         <div class="tab-body">
@@ -488,24 +532,55 @@
                 <categories-tab :info="{{self.info}}" id="results"></categories-tab>
             </div>
             <div :class="tab {{actions.tabSelectionMode.call(self, 'compatibility')}}">
-                <comparison-tab :info="{{self.info}}" @on:setinfo="{{events.setinfo}}"
-                                @on:updatetrait="{{events.updatetrait}}"></comparison-tab>
+                <comparison-tab
+                        :info="{{self.info}}"
+                        @on:setinfo="{{events.setinfo}}"
+                        @on:updatecharacter="{{events.updatecharacter}}"
+                        @on:selectpartner="{{events.selectpartner}}"></comparison-tab>
             </div>
         </div>
     </div>
+</script>
+<script type="text/html" id="character-editor-template">
+    <div>
+        <input type="text"
+               :value="{{self.character.name}}"
+               @on:input="actions.setName(events, event.target.value)"
+               placeholder="Имя">
+        <button @on:click="actions.clearTraits(events)">&#x2702;&#xFE0F ЧХ</button>
+        <traits class="traits flex-common"
+                :selectedtraits="{{self.character.traits}}"
+                @on:updatetrait="{{actions.toggleTrait(events)}}"></traits>
+    </div>
+</script>
+<script type="text/html" id="character-list-template">
+    <select @on:change="events.selectcharacter(event.target.value)"
+            @for="self.characters"
+            @hold>
+        <option :value="{{loop.index}}" :selected="{{loop.index === self.selectedid}}">
+            {{loop.item.name}}
+        </option>
+    </select>
 </script>
 <script type="text/html" id="main-template">
     <div>
         <div class="side-menu">
             <h2>Черты характера
-                <button @on:click="actions.clearTraits(actions)">&#x2702;&#xFE0F ЧХ персонажа</button>
+                <a href="./manage.html">[e]</a>
             </h2>
-            <traits id="selected-traits" class="traits flex-common" :selectedtraits="{{self.info.personTraits}}"
-                    @on:updatetrait="{{actions.toggleTrait('personTraits')}}"></traits>
+            <character-list :characters="{{persons}}"
+                            :selectedid="{{self.info.person}}"
+                            @on:selectcharacter="{{actions.setPersonId}}"></character-list>
+            <character-editor :character="{{persons[self.info.person]}}"
+                              @on:updatecharacter="{{actions.setPerson}}"
+            ></character-editor>
         </div>
         <main>
-            <tabs class="tab-container" :info="{{self.info}}" @on:clearpartnertraits="{{actions.clearPartnerTraits}}"
-                  @on:setinfo="{{actions.setInfo}}" @on:updatetrait="{{actions.toggleTrait('partnerTraits')}}"></tabs>
+            <tabs class="tab-container"
+                  :info="{{self.info}}"
+                  @on:updatecharacter="{{actions.setPartner}}"
+                  @on:setinfo="{{actions.setInfo}}"
+                  @on:selectpartner="{{actions.setPartnerId}}"></tabs>
         </main>
     </div>
 </script>
