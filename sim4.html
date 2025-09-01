@@ -157,21 +157,46 @@
         }
     }
 
-    let persons = {
-        0: new Character('Персонаж', []),
-        1: new Character('Персонаж 2', []),
+    // Добавляем метод для загрузки данных из localStorage
+    function loadCharactersFromLocalStorage(key, defaultCharacters) {
+        const saved = localStorage.getItem(key);
+        if (!saved) return defaultCharacters;
+
+        try {
+            return JSON.parse(saved).reduce((acc, { id, data }) => {
+                acc[id] = Character.fromJSON(data);
+                return acc;
+            }, {});
+        } catch (e) {
+            console.error(`Ошибка загрузки ${key}:`, e);
+            return defaultCharacters;
+        }
     }
 
-    let partners = {
-        0: new Character('Партнер', []),
-        1: new Character('Партнер 2', []),
+    // Добавляем метод для сохранения данных в localStorage
+    function saveCharactersToLocalStorage(key, characters) {
+        const serializable = Object.entries(characters).map((char) => ({
+            id: char[0],
+            data: char[1].toJSON(),
+        }));
+        localStorage.setItem(key, JSON.stringify(serializable));
     }
+
+    let defaultPerson = new Character('Персонаж', [])
+    let persons = loadCharactersFromLocalStorage('persons', {
+        0: defaultPerson,
+    })
+
+    let defaultPartner = new Character('Партнер', [])
+    let partners = loadCharactersFromLocalStorage('partners', {
+        0: defaultPartner,
+    })
 
     class Info {
         constructor() {
             // Инициализирует данные: дефолтные персонаж и партнер и их совместимости
-            this.person = 0
-            this.partner = 0
+            this.person = Object.keys(persons)[0]
+            this.partner = Object.keys(partners)[0]
             this.compatibility = {
                 scores: DATA.compatibilities.map(compatibility => {
                     return {
@@ -185,10 +210,6 @@
                 personTotal: 0,
                 partnerTotal: 0
             }
-        }
-
-        setPerson(person) {
-            this.person = person
             this.calcCompatibilityScore()
         }
 
@@ -394,6 +415,23 @@
                         this.characters[newId] = new Character(name, [])
                         events.selectcharacter(newId) // Обновляем выбранный персонаж
                         this.selectedid = newId
+                    },
+                    // удаление персонажа
+                    removeCharacter: function (events) {
+                        delete this.characters[this.selectedid]
+
+                        // Выбираем первого доступного персонажа
+                        const ids = Object.keys(this.characters)
+                        if (ids.length === 0) {
+                            // Создаем нового персонажа "New", если их нет
+                            const newId = Date.now();
+                            this.characters[newId] = new Character("New", [])
+                            this.selectedid = newId
+                        } else {
+                            this.selectedid = ids[0]
+                        }
+
+                        events.selectcharacter(this.selectedid)
                     }
                 },
                 events: {
@@ -414,22 +452,26 @@
                 // Новый метод для установки персонажа
                 setPerson: function (person) {
                     persons[this.info.person] = Character.fromJSON(person.toJSON())
+                    saveCharactersToLocalStorage('persons', persons)
                     this.info.calcCompatibilityScore()
                     main.triggerRender()
                 },
                 setPersonId: function (personId) {
                     this.info.person = personId
+                    saveCharactersToLocalStorage('persons', persons)
                     this.info.calcCompatibilityScore()
                     main.triggerRender()
                 },
                 // Новый метод для установки партнера
                 setPartner: function (partner) {
                     partners[this.info.partner] = Character.fromJSON(partner.toJSON())
+                    saveCharactersToLocalStorage('partners', partners)
                     this.info.calcCompatibilityScore()
                     main.triggerRender()
                 },
                 setPartnerId: function (partnerId) {
                     this.info.partner = partnerId
+                    saveCharactersToLocalStorage('partners', partners)
                     this.info.calcCompatibilityScore()
                     main.triggerRender()
                 },
@@ -550,6 +592,7 @@
             </option>
         </select>
         <button @on:click="actions.addCharacter(events)">+</button>
+        <button @on:click="actions.removeCharacter(events)">-</button>
         <input type="text"
                :value="{{self.characters[self.selectedid].name}}"
                @on:input="actions.setName(events, event.target.value)"
