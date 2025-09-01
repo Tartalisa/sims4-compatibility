@@ -337,7 +337,7 @@ class Component {
 
     _parseText(self, text) {
         for (let [t, v] of Object.entries(this._parseData(self, text))) {
-            text = text.replace(`{{${t}}}`, v)
+            text = text.replaceAll(`{{${t}}}`, v)
         }
         return text
     }
