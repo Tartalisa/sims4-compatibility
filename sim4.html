@@ -361,44 +361,47 @@
         })
         registerComponent('character-editor', () => {
             return {
-                data: {character: {}},
+                data: {
+                    characters: {},     // Все персонажи
+                    selectedid: null,   // Текущий выбранный персонаж
+                },
                 actions: {
                     clearTraits: function (events) {
-                        this.character.traits.clear()
-                        events.updatecharacter(this.character)
+                        let character = this.characters[this.selectedid]
+                        character.traits.clear()
+                        events.updatecharacter(character)
                     },
                     toggleTrait: function (events) {
                         return function (trait) {
-                            if (this.character.traits.has(trait)) this.character.traits.delete(trait)
-                            else this.character.traits.add(trait)
-                            events.updatecharacter(this.character)
+                            let character = this.characters[this.selectedid]
+                            if (character.traits.has(trait)) character.traits.delete(trait)
+                            else character.traits.add(trait)
+                            events.updatecharacter(character)
                         }
                     },
-                    // Новый метод для установки имени персонажа
+                    // установка имени персонажа
                     setName: function (events, newName) {
-                        this.character.name = newName
-                        events.updatecharacter(this.character)
+                        let character = this.characters[this.selectedid]
+                        character.name = newName
+                        events.updatecharacter(character)
+                    },
+                    // добавление нового персонажа
+                    addCharacter: function (events) {
+                        const name = prompt("Введите имя нового персонажа:")
+                        if (!name) return
+
+                        const newId = Date.now(); // Используем временную метку как ключ
+                        this.characters[newId] = new Character(name, [])
+                        events.selectcharacter(newId) // Обновляем выбранный персонаж
+                        this.selectedid = newId
                     }
                 },
                 events: {
-                    updatecharacter: (character) => null
-                }
-            }
-        })
-
-        registerComponent('character-list', () => {
-            return {
-                data: {
-                    selectedid: null,
-                    characters: {}
-                },
-                events: {
+                    updatecharacter: (character) => null,
                     selectcharacter: (characterId) => null,
-                    setCharacter: (character) => null
                 }
             }
         })
-
         window.main = new Component({
             root: document.querySelector('#main'),
             data: {
@@ -466,10 +469,8 @@
             <thead>
             <tr>
                 <th>Категория совместимости</th>
-                <th><input :value="{{persons[self.info.person].name}}">
-                </th>
-                <th><input :value="{{partners[self.info.partner].name}}">
-                </th>
+                <th>{{persons[self.info.person].name}}</th>
+                <th>{{partners[self.info.partner].name}}</th>
             </tr>
             </thead>
             <tbody @for="self.info.compatibility.scores">
@@ -481,12 +482,13 @@
             </tbody>
             <tfoot>
             <tr>
-                <td>Оценка</td>
-                <td><b>{{persons[self.info.person].name}}</b>: {{self.info.compatibility.personTotal}}</td>
-                <td><b>{{partners[self.info.partner].name}}</b>: {{self.info.compatibility.partnerTotal}}</td>
+                <td><b>Оценка</b></td>
+                <td>{{self.info.compatibility.personTotal}}</td>
+                <td>{{self.info.compatibility.partnerTotal}}</td>
             </tr>
             <tr>
-                <td colspan="3"><b>Общая совместимость:</b> {{self.info.compatibility.total}}</td>
+                <td><b>Общая совместимость:</b></td>
+                <td colspan="2">{{self.info.compatibility.total}}</td>
             </tr>
             </tfoot>
         </table>
@@ -505,16 +507,13 @@
         <comparison id="compatibility-results"
                     :info="{{self.info}}"
                     @on:setinfo="{{events.setinfo}}"></comparison>
-        <div id="partner-traits">
-            <character-list :characters="{{partners}}"
-                            :selectedId="{{self.info.partner}}"
-                            @on:selectcharacter="{{events.selectpartner}}"></character-list>
-            <character-editor
-                    :character="{{partners[self.info.partner]}}"
-                    @on:updatecharacter="{{events.updatecharacter}}"
-            ></character-editor>
-        </div>
-
+        <character-editor
+                id="partner-traits"
+                :characters="{{partners}}"
+                :selectedid="{{self.info.partner}}"
+                @on:selectcharacter="{{events.selectpartner}}"
+                @on:updatecharacter="{{events.updatecharacter}}"
+        ></character-editor>
     </div>
 </script>
 <script type="text/html" id="tabs-template">
@@ -543,24 +542,23 @@
 </script>
 <script type="text/html" id="character-editor-template">
     <div>
+        <select @on:change="events.selectcharacter(event.target.value)"
+                @for="self.characters"
+                @hold>
+            <option :value="{{loop.index}}" :selected="{{loop.index == self.selectedid}}">
+                {{loop.item.name}}
+            </option>
+        </select>
+        <button @on:click="actions.addCharacter(events)">+</button>
         <input type="text"
-               :value="{{self.character.name}}"
+               :value="{{self.characters[self.selectedid].name}}"
                @on:input="actions.setName(events, event.target.value)"
                placeholder="Имя">
         <button @on:click="actions.clearTraits(events)">&#x2702;&#xFE0F ЧХ</button>
         <traits class="traits flex-common"
-                :selectedtraits="{{self.character.traits}}"
+                :selectedtraits="{{self.characters[self.selectedid].traits}}"
                 @on:updatetrait="{{actions.toggleTrait(events)}}"></traits>
     </div>
-</script>
-<script type="text/html" id="character-list-template">
-    <select @on:change="events.selectcharacter(event.target.value)"
-            @for="self.characters"
-            @hold>
-        <option :value="{{loop.index}}" :selected="{{loop.index === self.selectedid}}">
-            {{loop.item.name}}
-        </option>
-    </select>
 </script>
 <script type="text/html" id="main-template">
     <div>
@@ -568,11 +566,11 @@
             <h2>Черты характера
                 <a href="./manage.html">[e]</a>
             </h2>
-            <character-list :characters="{{persons}}"
-                            :selectedid="{{self.info.person}}"
-                            @on:selectcharacter="{{actions.setPersonId}}"></character-list>
-            <character-editor :character="{{persons[self.info.person]}}"
-                              @on:updatecharacter="{{actions.setPerson}}"
+            <character-editor
+                    :characters="{{persons}}"
+                    :selectedid="{{self.info.person}}"
+                    @on:selectcharacter="{{actions.setPersonId}}"
+                    @on:updatecharacter="{{actions.setPerson}}"
             ></character-editor>
         </div>
         <main>
