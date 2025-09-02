@@ -182,6 +182,75 @@
         localStorage.setItem(key, JSON.stringify(serializable));
     }
 
+    // Добавляем метод для загрузки данных из json-файла
+    function loadCharactersFromFile(saved, defaultCharacters) {
+        if (!saved.length) return defaultCharacters;
+
+        try {
+            return saved.reduce((acc, { id, data }) => {
+                acc[id] = Character.fromJSON(data);
+                return acc;
+            }, {});
+        } catch (e) {
+            console.error(`Ошибка загрузки:`, e);
+            return defaultCharacters;
+        }
+    }
+
+    function loadSavedCharacters(event) {
+        const file = event.target.files[0] // Получаем выбранный файл
+
+        if (file) {
+            const reader = new FileReader() // Создаем FileReader для чтения файла
+
+            // Обработчик события "load", который срабатывает после завершения чтения файла
+            reader.onload = function(e) {
+                const content = e.target.result; // Содержимое файла
+                const data = JSON.parse(content)
+                persons = loadCharactersFromFile(data.persons, {
+                    0: defaultPerson,
+                })
+                saveCharactersToLocalStorage('persons', persons)
+                partners = loadCharactersFromFile(data.partners, {
+                    0: defaultPartner,
+                })
+                saveCharactersToLocalStorage('partners', partners)
+                main.data.info.person = Object.keys(persons)[0]
+                main.data.info.partner = Object.keys(partners)[0]
+            };
+
+            // Чтение файла как текста
+            reader.readAsText(file);
+        }
+    }
+
+    // Добавляем метод для сохранения данных в json-файл
+    function saveCharactersToFile() {
+        const _personsRaw = Object.entries(persons).map((char) => ({
+            id: char[0],
+            data: char[1].toJSON(),
+        }));
+        const _partnersRaw = Object.entries(partners).map((char) => ({
+            id: char[0],
+            data: char[1].toJSON(),
+        }));
+
+        const string = JSON.stringify({
+            'persons': _personsRaw,
+            'partners': _partnersRaw
+        }, null, 2)
+        function handler (event){
+            event.clipboardData.setData('text/plain', string)
+            event.preventDefault()
+            document.removeEventListener('copy', handler, true)
+        }
+
+        document.addEventListener('copy', handler, true)
+        document.execCommand('copy')
+
+
+    }
+
     let defaultPerson = new Character('Персонаж', [])
     let persons = loadCharactersFromLocalStorage('persons', {
         0: defaultPerson,
@@ -425,7 +494,7 @@
                         if (ids.length === 0) {
                             // Создаем нового персонажа "New", если их нет
                             const newId = Date.now();
-                            this.characters[newId] = new Character("New", [])
+                            this.characters[newId] = new Character("Новый сим", [])
                             this.selectedid = newId
                         } else {
                             this.selectedid = ids[0]
@@ -593,6 +662,7 @@
         </select>
         <button @on:click="actions.addCharacter(events)">+</button>
         <button @on:click="actions.removeCharacter(events)">-</button>
+        <br>
         <input type="text"
                :value="{{self.characters[self.selectedid].name}}"
                @on:input="actions.setName(events, event.target.value)"
@@ -607,7 +677,9 @@
     <div>
         <div class="side-menu">
             <h2>Черты характера
-                <a href="./manage.html">[e]</a>
+                <button @on:click="saveCharactersToFile()">⧉</button>
+                <button onclick="document.querySelector('#file').click()">&#x1f4c1;</button>
+                <input id="file" type="file" @on:change="loadSavedCharacters(event)" style="display: none">
             </h2>
             <character-editor
                     :characters="{{persons}}"
