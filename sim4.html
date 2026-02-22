@@ -229,11 +229,11 @@
         const _personsRaw = Object.entries(persons).map((char) => ({
             id: char[0],
             data: char[1].toJSON(),
-        }));
+        })).sort((a, b) => a.data.name.localeCompare(b.data.name));
         const _partnersRaw = Object.entries(partners).map((char) => ({
             id: char[0],
             data: char[1].toJSON(),
-        }));
+        })).sort((a, b) => a.data.name.localeCompare(b.data.name));
 
         const string = JSON.stringify({
             'persons': _personsRaw,
@@ -247,8 +247,6 @@
 
         document.addEventListener('copy', handler, true)
         document.execCommand('copy')
-
-
     }
 
     let defaultPerson = new Character('Персонаж', [])
@@ -592,11 +590,6 @@
             </tr>
             </tbody>
             <tfoot>
-            <tr>
-                <td><b>Оценка</b></td>
-                <td>{{self.info.compatibility.personTotal}}</td>
-                <td>{{self.info.compatibility.partnerTotal}}</td>
-            </tr>
             <tr>
                 <td><b>Общая совместимость:</b></td>
                 <td colspan="2">{{self.info.compatibility.total}}</td>
