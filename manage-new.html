@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Настройка</title>
+    <style>
+        main > div {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            font-family: sans-serif;
+            align-items: flex-start;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .sidebar {
+            width: 20%;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            padding: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+        }
+
+        .content-area {
+            width: 80%;
+            min-height: 100vh;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .tab-panel {
+            padding: 24px;
+            border: 2px solid #90caf9;
+            border-radius: 12px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(144, 202, 249, 0.25);
+            margin-bottom: 15px;
+        }
+
+        .traits-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .trait-item {
+            background-color: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 16px;
+            padding: 6px 12px;
+            font-size: 14px;
+            color: #1565c0;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .trait-item:hover {
+            background-color: #bbdefb;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .remove-trait {
+            margin-left: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #f44336;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .trait-item:hover .remove-trait {
+            opacity: 1;
+        }
+
+        .add-trait-form {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .add-trait-form input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 2px solid #90caf9;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            background-color: #ffffff;
+            transition: all 0.2s ease;
+        }
+
+        .add-trait-form input:focus {
+            border-color: #1976d2;
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .add-trait-form button {
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(25, 118, 210, 0.3);
+        }
+
+        .add-trait-form button:hover {
+            background-color: #1565c0;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(25, 118, 210, 0.4);
+        }
+
+        .nav-tabs {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .nav-tabs li {
+            padding: 12px 16px;
+            margin: 4px 0;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            color: #1565c0;
+            font-weight: 500;
+        }
+
+        .nav-tabs li:hover {
+            background-color: #e3f2fd;
+            transform: translateY(-1px);
+        }
+
+        .nav-tabs li.active {
+            background-color: #bbdefb;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+<script src="mkreactor.js"></script>
+<script src="data.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        registerComponent('traits-crud', () => {
+            return {
+                data: {
+                    traits: [],
+                    newTrait: ''
+                },
+                actions: {
+                    setNewTrait: (self, value) => {
+                        console.debug(`trait: ${value}`);
+                        self.newTrait = value;
+                    },
+                    addTrait: (event, self, events) => {
+                        event.preventDefault();
+                        let trait = self.newTrait.trim()
+                        console.debug(`trait: ${trait}`);
+                        if (trait && !self.traits.includes(trait)) {
+                            events.addtrait(trait);
+                            self.newTrait = '';
+                        }
+                    },
+                },
+                events: {
+                    addtrait: (trait) => null,
+                    removetrait: (trait) => null
+                }
+            }
+        });
+
+        const main = new Component({
+            root: document.querySelector('main'),
+            data: {
+                selectedTab: 'traits-crud',
+                traits: loadData().traits
+            },
+            actions: {
+                selectTab: (self, tabId) => {
+                    self.selectedTab = tabId;
+                },
+                isActive: (self, tabId) => {
+                    return self.selectedTab === tabId ? 'active' : '';
+                },
+                addtrait: (trait) => {
+                    main.data.traits.push(trait);
+                    main.data.traits.sort((a, b) => a.localeCompare(b));
+                },
+                removeTrait: (trait) => {
+                    const index = main.data.traits.indexOf(trait);
+                    if (index > -1) {
+                        main.data.traits.splice(index, 1);
+                    }
+                }
+            }
+        });
+        main.render();
+    });
+</script>
+<script type="text/html" id="traits-crud-template">
+    <div>
+        <form class="add-trait-form" @on:submit="actions.addTrait(event, self, events)">
+            <input type="text" :value="{{self.newTrait}}" placeholder="Новая черта характера"
+                   @on:input="actions.setNewTrait(self, event.target.value)"/>
+            <button type="submit">Добавить</button>
+        </form>
+        <div class="traits-list">
+            <div @for="self.traits">
+                <div class="trait-item">
+                    <span class="remove-trait" @on:click="events.removetrait(loop.item)">&#10006;</span>
+                    <span>{{loop.item}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/html" id="main-template">
+    <div>
+        <aside class="sidebar">
+            <h2>Меню</h2>
+            <ul class="nav-tabs">
+                <li @on:click="actions.selectTab(self, 'traits-crud')"
+                    :class="{{actions.isActive(self, 'traits-crud')}}">Черты характера
+                </li>
+                <li @on:click="actions.selectTab(self, 'tab2')" :class="{{actions.isActive(self, 'tab2')}}">Вкладка 2
+                </li>
+            </ul>
+        </aside>
+        <section class="content-area">
+            <article class="tab-panel" @if="actions.isActive(self, 'traits-crud')">
+                <h3>Черты характера</h3>
+                <traits-crud class="traits flex-common" :traits="{{self.traits}}"
+                             @on:addtrait="{{actions.addtrait}}"
+                             @on:removetrait="{{actions.removeTrait}}"
+                ></traits-crud>
+            </article>
+            <article class="tab-panel" @if="actions.isActive(self, 'tab2')">
+                <h3>Контент вкладки 2</h3>
+                <p>Это содержимое второй вкладки. Оно будет отображаться при выборе соответствующей вкладки в меню.</p>
+            </article>
+        </section>
+    </div>
+</script>
+<main></main>
+</body>
+</html>
