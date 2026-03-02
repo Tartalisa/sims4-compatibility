@@ -29,9 +29,10 @@ const _validator = (parent) => {
                 return new Proxy(value, _validator(parent))
             }
             value = Reflect.get(...arguments);
+            if (typeof value != 'function') return value
             if (['add', 'delete', 'clear', 'push', 'pop', 'shift', 'unshift', 'splice', 'reverse',
                 'sort'].includes(key)) parent.triggerRender()
-            return typeof value == 'function' ? value.bind(target) : value
+            return value.bind(target)
         },
         set(target, key, value) {
             if (target[key] === value) return true
@@ -77,6 +78,7 @@ class Component {
 
     render() {
         if (RenderState.READY !== this._renderState) return
+        console.debug(`Rendering ${this.name}`)
         this._renderState = RenderState.PROCESSING
         try {
             const virtualElement = document.createElement('div')

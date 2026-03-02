@@ -74,6 +74,10 @@
             background-color: #ffef96;
         }
 
+        table tbody tr:nth-child(even).yellow {
+            background-color: #dbcb72;
+        }
+
         table#history {
             border-collapse: collapse;
             border: 1px solid black;
@@ -95,6 +99,10 @@
         table tbody tr:hover {
             background-color: #ececec;
             transition: background-color .2s ease-in-out;
+        }
+
+        table tbody tr.yellow:hover {
+            background-color: #eddd84;
         }
 
         table tbody tr {
@@ -163,10 +171,23 @@
         if (!saved) return defaultCharacters;
 
         try {
-            return JSON.parse(saved).reduce((acc, { id, data }) => {
+            return JSON.parse(saved).reduce((acc, {id, data}) => {
                 acc[id] = Character.fromJSON(data);
                 return acc;
             }, {});
+        } catch (e) {
+            console.error(`Ошибка загрузки ${key}:`, e);
+            return defaultCharacters;
+        }
+    }
+
+    // Добавляем метод для загрузки парочек из localStorage
+    function loadPairsFromLocalStorage() {
+        const saved = localStorage.getItem('pairs');
+        if (!saved) return [];
+
+        try {
+            return JSON.parse(saved);
         } catch (e) {
             console.error(`Ошибка загрузки ${key}:`, e);
             return defaultCharacters;
@@ -182,12 +203,17 @@
         localStorage.setItem(key, JSON.stringify(serializable));
     }
 
+    // Добавляем метод для сохранения парочек в localStorage
+    function savePairsToLocalStorage(pairs) {
+        localStorage.setItem('pairs', JSON.stringify(pairs));
+    }
+
     // Добавляем метод для загрузки данных из json-файла
     function loadCharactersFromFile(saved, defaultCharacters) {
         if (!saved.length) return defaultCharacters;
 
         try {
-            return saved.reduce((acc, { id, data }) => {
+            return saved.reduce((acc, {id, data}) => {
                 acc[id] = Character.fromJSON(data);
                 return acc;
             }, {});
@@ -204,9 +230,11 @@
             const reader = new FileReader() // Создаем FileReader для чтения файла
 
             // Обработчик события "load", который срабатывает после завершения чтения файла
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 const content = e.target.result; // Содержимое файла
                 const data = JSON.parse(content)
+                pairs = data.pairs || []
+                savePairsToLocalStorage(pairs)
                 persons = loadCharactersFromFile(data.persons, {
                     0: defaultPerson,
                 })
@@ -237,9 +265,11 @@
 
         const string = JSON.stringify({
             'persons': _personsRaw,
-            'partners': _partnersRaw
+            'partners': _partnersRaw,
+            'pairs': pairs,
         }, null, 2)
-        function handler (event){
+
+        function handler(event) {
             event.clipboardData.setData('text/plain', string)
             event.preventDefault()
             document.removeEventListener('copy', handler, true)
@@ -258,12 +288,13 @@
     let partners = loadCharactersFromLocalStorage('partners', {
         0: defaultPartner,
     })
+    let pairs = loadPairsFromLocalStorage()
 
     class Info {
-        constructor() {
+        constructor(person, partner) {
             // Инициализирует данные: дефолтные персонаж и партнер и их совместимости
-            this.person = Object.keys(persons)[0]
-            this.partner = Object.keys(partners)[0]
+            this.person = person
+            this.partner = partner
             this.compatibility = {
                 scores: DATA.compatibilities.map(compatibility => {
                     return {
@@ -277,7 +308,6 @@
                 personTotal: 0,
                 partnerTotal: 0
             }
-            this.calcCompatibilityScore()
         }
 
         calcCompatibilityScore() {
@@ -309,15 +339,6 @@
             ) / 10
         }
 
-        static fromJSON(json) {
-            // Восстанавливает объект Info из JSON (полученного, например, из localStorage)
-            let info = new Info()
-            info.person = json['person']
-            info.partner = json['partner']
-            info.compatibility = json['compatibility']
-            return info
-        }
-
         toJSON() {
             // Преобразует объект Info в JSON для сохранения
             return {
@@ -325,6 +346,19 @@
                 'partner': this.partner,
                 'compatibility': Object.assign({}, this.compatibility)
             }
+        }
+
+        static fromJSON(json) {
+            // Восстанавливает объект Info из JSON (полученного, например, из localStorage)
+            let info = new Info(json['person'], json['partner'])
+            info.compatibility = json['compatibility']
+            return info
+        }
+
+        static buildWithCalculation() {
+            let info = new Info(Object.keys(persons)[0], Object.keys(partners)[0])
+            info.calcCompatibilityScore()
+            return info
         }
     }
 
@@ -402,9 +436,66 @@
         registerComponent('comparison', () => {
             return {
                 data: {
-                    info: {}
+                    info: {},
+                    sort: 'person'
                 },
-                actions: {},
+                actions: {
+                    addPair: function (self) {
+                        const idx = pairs.map(
+                            v => `${v.person}|${v.partner}`
+                        ).indexOf(`${self.info.person}|${self.info.partner}`)
+                        if (idx === -1) {
+                            pairs.push({
+                                "person": self.info.person,
+                                "partner": self.info.partner,
+                            })
+                            savePairsToLocalStorage(pairs)
+                            main.triggerRender()
+                        }
+                    },
+                    removePair: function (e, idx) {
+                        e.cancelBubble = true
+                        pairs.splice(idx, 1)
+                        savePairsToLocalStorage(pairs)
+                        main.triggerRender()
+                    },
+                    togglePairCheck: function (idx) {
+                        pairs[idx].checked = !pairs[idx]?.checked
+                        console.log(pairs[idx])
+                        savePairsToLocalStorage(pairs)
+                        main.triggerRender()
+                    },
+                    setSort: function (self, sort) {
+                        if (self.sort === sort) {
+                            sort = '-' + sort
+                        }
+                        self.sort = sort
+                    },
+                    getSortedPairs: function (sort) {
+                        let localPairs = pairs.map((pair, idx) => {
+                            let i = new Info(pair.person, pair.partner)
+                            i.calcCompatibilityScore()
+                            return {
+                                'person': persons[pair.person].name,
+                                'partner': partners[pair.partner].name,
+                                'score': i.compatibility.total,
+                                idx,
+                                pair
+                            }
+                        })
+                        let order = 1
+                        if (sort[0] === '-') {
+                            sort = sort.slice(1)
+                            order = -1
+                        }
+                        return localPairs.sort((a, b) => order * ((a[sort] > b[sort]) * 2 - 1))
+                    },
+                    getScore: function (item) {
+                        let i = new Info(item.person, item.partner)
+                        i.calcCompatibilityScore()
+                        return i.compatibility.total
+                    }
+                },
                 events: {
                     setinfo: (info) => null
                 }
@@ -418,6 +509,7 @@
                 data: {
                     info: {}
                 },
+                actions: {},
                 events: {
                     updatecharacter: (character) => null,
                     selectpartner: (partnerId) => null
@@ -510,7 +602,7 @@
         window.main = new Component({
             root: document.querySelector('#main'),
             data: {
-                info: new Info(),
+                info: Info.buildWithCalculation(),
             },
             actions: {
                 setInfo: function (info) {
@@ -567,7 +659,10 @@
 </script>
 <script type="text/html" id="traits-template">
     <div @for="DATA.traits">
-        <div @on:click="events.updatetrait(loop.item)" :class="{{self.selectedtraits.has(loop.item) ? 'yellow' : ''}}">
+        <div
+                @on:click="events.updatetrait(loop.item)"
+                :class="{{self.selectedtraits.has(loop.item) ? 'yellow' : ''}}"
+        >
             <span>{{loop.item}}</span>
         </div>
     </div>
@@ -582,7 +677,7 @@
                 <th>{{partners[self.info.partner].name}}</th>
             </tr>
             </thead>
-            <tbody @for="self.info.compatibility.scores">
+            <tbody @for="self.info.compatibility.scores" @hold>
             <tr>
                 <th>{{loop.item.name}} ({{loop.item.compatibilityScore}})</th>
                 <td>{{loop.item.personScore}}</td>
@@ -596,6 +691,41 @@
             </tr>
             </tfoot>
         </table>
+        <h2>Парочки
+            <button @on:click="actions.addPair(self)">+</button>
+        </h2>
+        <table>
+            <thead>
+            <tr>
+                <th @on:click="actions.setSort(self, 'person')">
+                    Персонаж
+                    <span @if="self.sort==='person'">&#8648;</span>
+                    <span @if="self.sort==='-person'">&#8650;</span>
+                </th>
+                <th @on:click="actions.setSort(self, 'partner')">
+                    Партнер
+                    <span @if="self.sort==='partner'">&#8648;</span>
+                    <span @if="self.sort==='-partner'">&#8650;</span>
+                </th>
+                <th @on:click="actions.setSort(self, 'score')">
+                    Совместимость
+                    <span @if="self.sort==='score'">&#8648;</span>
+                    <span @if="self.sort==='-score'">&#8650;</span>
+                </th>
+            </tr>
+            </thead>
+            <tbody @for="actions.getSortedPairs(self.sort)" @hold>
+            <tr :class="{{loop.item?.pair.checked ? 'yellow' : ''}}" @on:click="actions.togglePairCheck(loop.item.idx)">
+                <td>{{loop.item.person}}</td>
+                <td>{{loop.item.partner}}</td>
+                <td>{{loop.item.score}}
+                    <span class="close-button" @on:click="actions.removePair(event, loop.item.pair)">
+                        &#10006;
+                    </span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 </script>
 <script type="text/html" id="categories-tab-template">
@@ -608,9 +738,11 @@
 </script>
 <script type="text/html" id="comparison-tab-template">
     <div id="compatibility">
-        <comparison id="compatibility-results"
-                    :info="{{self.info}}"
-                    @on:setinfo="{{events.setinfo}}"></comparison>
+        <comparison
+                id="compatibility-results"
+                :info="{{self.info}}"
+                @on:setinfo="{{events.setinfo}}"
+        ></comparison>
         <character-editor
                 id="partner-traits"
                 :characters="{{partners}}"
